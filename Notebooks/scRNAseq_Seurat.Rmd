@@ -1,0 +1,323 @@
+---
+title: "scRNAseq analysis for Deng et al. (2014)"
+author: "Jose Alejandro Romero Herrera"
+date: '`r Sys.Date()`'
+knit: (function(inputFile, encoding) { 
+      rmarkdown::render(inputFile,
+                        encoding=encoding,
+                        output_format='all',
+                        output_dir='../reports/')})
+output:
+  # To create PDF report, uncomment below
+  #pdf_document:
+  #  toc: yes
+  html_document:
+    number_sections: yes
+    theme: yeti
+    toc: yes
+    toc_float: yes
+    df_print: paged
+    dev: png
+---
+
+```{r knitr, include = FALSE}
+DOCNAME = knitr::current_input()
+knitr::opts_chunk$set(autodep        = TRUE,
+                      cache          = FALSE,
+                      cache.path     = paste0("cache/", DOCNAME, "/"),
+                      cache.comments = TRUE,
+                      echo           = TRUE,
+                      error          = FALSE,
+                      fig.align      = "center",
+                      fig.path       = paste0("./figures/", DOCNAME, "/"),
+                      fig.width      = 10,
+                      fig.height     = 8,
+                      message        = FALSE,
+                      warning        = FALSE)
+```
+
+# Introduction
+
+scRNAseq data analysis of Deng et al. (2014). This study follows the early embryonic development of mouse cells from zygote to late blastocists (+ fibroblast and "adult" cells).
+
+# Load libraries
+```{r message=FALSE}
+library(rhdf5)
+library(tidyverse)
+library(Seurat)
+library(patchwork)
+library(biomaRt)
+```
+
+# Extra functions
+*mreplace()* is a function that replaces a vector of matches with a pair-wise vector replacement.
+```{r}
+mreplace <- function(x,patterns,replacements){
+  if (is.factor(x)){
+    x <- as.character(x)
+  }
+  n = 0
+  for (value in patterns){
+    n = n + 1
+    x[x==value] <- replacements[n]
+  }
+  return(x)
+}
+```
+
+
+# Load dataset
+
+## Data
+Data is a matrix of cells in columns and genes in rows. Column name for the gene is missing
+```{r message=FALSE}
+random_seed <- 12345
+load_data <- function (data_path) {
+  data_path <- paste0("../data/raw/", data_path)
+  data <- as.data.frame(read_delim(data_path, "\t", escape_double = FALSE, 
+                                   trim_ws = TRUE, col_names = T ))
+  
+  data_temp <- as.matrix(data[,-1], dimnames = NULL)
+  gene_id <- as.vector(data[,1])
+  cell_id <- as.vector(colnames(data)[-1])
+  return(list("data" = data_temp, "gene_id" = gene_id, "cell_id" = cell_id))
+}
+
+raw_data <- load_data("GSE45719_cts.txt")
+
+rownames(raw_data$data) <- raw_data$gene_id
+```
+
+## Metadata
+
+Loading metadata. raw data Cell_id is the same as metadata sample_id
+```{r}
+metadata <- read.delim("../data/raw/GSE45719_metadata.tsv", 
+                       header = T, sep = "\t", quote = "", stringsAsFactors = F)
+
+metadata <- metadata[match(raw_data$cell_id, metadata$sample_id),]
+
+row_id <- metadata$sample_id
+rownames(metadata) <- metadata$sample_id
+metadata <- metadata[,!names(metadata) %in% c("sample_id")]
+```
+
+Modifying strain
+```{r}
+matches <- c("C57BL/6J(mother) x CAST/EiJ(father)", "CAST/EiJ(mother) x C57BL/6J(father)") 
+replacement <- c("C57BL/6J(m)xCAST/EiJ(f)", "CAST/EiJ(m)xC57BL/6J(f)") 
+metadata$strain <- mreplace(metadata$strain, matches, replacement)
+```
+
+Modifying developmental stage. From the paper it seems that "Na" cells are MII oocytes
+```{r}
+metadata$developmental.stage[which(metadata$developmental.stage == "Na")] <- metadata$cross[which(metadata$developmental.stage == "Na")]
+metadata$developmental.stage[which(metadata$developmental.stage == "Na")] <- "MII Oocyte"
+matches <- unique(metadata$developmental.stage)
+replacement <- c("Early blastocyst", "Fibroblast", "8-cell", 
+                 "Mid blastocyst","Late 2-cell","Zygote",
+                 "Late blastocyst","Early 2-cell","16-cell",
+                 "MII Oocyte","Mid 2-cell","4-cell","Adult")
+
+metadata$developmental.stage <- mreplace(metadata$developmental.stage, matches, replacement)
+
+metadata$developmental.stage <- factor(metadata$developmental.stage, levels = c("MII Oocyte","Zygote","Early 2-cell","Mid 2-cell","Late 2-cell","4-cell","8-cell",
+                                                                                   "16-cell","Early blastocyst","Mid blastocyst","Late blastocyst",
+                                                                                   "Fibroblast","Adult"))
+```
+
+Remove cell_id column because it does not really have any good information.
+```{r}
+metadata <- metadata[,!(colnames(metadata) %in% c("cell_id","sample_channel_count"))]
+```
+
+```{r}
+colnames(metadata) <- c("Strain","Cross","Cell_type","Tissue")
+```
+
+Get mm9 gene annotations
+```{r}
+ensembl67=useMart(host='may2012.archive.ensembl.org',
+                  biomart='ENSEMBL_MART_ENSEMBL', dataset = "mmusculus_gene_ensembl")
+mm9.gene.annotations <- biomaRt::getBM(mart = ensembl67, attributes=c("ensembl_gene_id", "external_gene_id", "start_position", "end_position", "description"))
+```
+
+
+## Seurat object
+Create Seurat object
+```{r}
+raw_ann <- CreateSeuratObject(counts = raw_data$data, meta.data = metadata, project = "sandberg_et_al", min.cells = 3, min.features = 200)
+```
+
+# QC
+
+## Before filtering
+
+```{r}
+print(paste0("Before filtering: ", dim(raw_ann)[2], " cells ",  dim(raw_ann)[1], " genes"))
+```
+
+Mitochondrial genes
+```{r}
+mt_genes <- mm9.gene.annotations$external_gene_id[grep(mm9.gene.annotations$description, pattern = "^mitochon", ignore.case = T)]
+mt_genes <- mt_genes[mt_genes %in% rownames(raw_ann)]
+```
+
+```{r}
+raw_ann[['percent.mito']] <- PercentageFeatureSet(raw_ann, features = mt_genes)
+raw_ann[['percent.ercc']] <- PercentageFeatureSet(raw_ann, pattern = "^ERCC-")
+raw_ann[['percent.ribo']] <- PercentageFeatureSet(raw_ann, pattern = "^Rp[ls]")
+```
+
+There aren't ERCC genes
+
+```{r}
+sum(raw_ann$percent.ercc)
+```
+
+
+```{r QC_before_filter, fig.width=16, fig.height=5}
+VlnPlot(raw_ann, 
+        features = c("nFeature_RNA", "nCount_RNA", "percent.mito", "percent.ribo"),
+        ncol = 4, group.by = "Cell_type")
+```
+
+It seems that the late 2-cells have a very high total number of reads. We should not filter them out.
+```{r QC_before_filtering2}
+FeatureScatter(raw_ann, feature1 = "nCount_RNA", feature2 = "nFeature_RNA", group.by = "Cell_type")
+```
+
+## Filtering
+Remove lower branch outlier cells using quantiles
+```{r}
+feature_min <- quantile(raw_ann$nFeature_RNA, probs = 0.01)
+count_min <- quantile(raw_ann$nCount_RNA, probs = 0.01)
+```
+
+Very low ribosomal and mitochondrial percentages. We do not filter by that.
+
+```{r}
+adata <- subset(raw_ann, subset = 
+                    nFeature_RNA > feature_min  & 
+                    nCount_RNA > count_min)
+rm(raw_ann)
+```
+
+## After filtering
+```{r}
+print(paste0("After filtering: ", dim(adata)[2], " cells ",  dim(adata)[1], " genes"))
+```
+
+```{r QC_after_filtering, fig.width=16, fig.height=5}
+VlnPlot(adata, 
+        features = c("nFeature_RNA", "nCount_RNA", "percent.mito", "percent.ribo"),
+        ncol = 4, group.by = "Cell_type")
+```
+
+# Normalization
+
+```{r message=FALSE, warning=FALSE}
+adata <- NormalizeData(adata)
+adata <- FindVariableFeatures(adata, selection.method = "vst", nfeatures = 2000)
+```
+Identify most variable genes and label top 10 most highly variable.
+```{r top_variable_genes, fig.width = 7, fig.height=5}
+top10 <- head(VariableFeatures(adata), 10)
+LabelPoints(plot = VariableFeaturePlot(adata), points = top10, repel = T)
+```
+
+# Scale
+
+```{r message=FALSE, warning=FALSE, results='hide'}
+adata <- ScaleData(adata)
+```
+
+# PCA
+
+```{r}
+adata <- RunPCA(adata, seed.use = random_seed)
+```
+
+```{r PCA_loadings, fig.height = 5}
+pcalod_1 <- VizDimLoadings(object = adata, dims = 1) + theme(axis.text.y = element_text(size = 8)) 
+pcalod_2 <- VizDimLoadings(object = adata, dims = 2) + theme(axis.text.y = element_text(size = 8))
+
+CombinePlots(plots = list(pcalod_1, pcalod_2), ncol = 2)
+```
+
+Visualization only show negative loadings cause there are many more than positives. We can see a balanced plot using *balance = TRUE*
+```{r PCA_loadings_balanced, fig.height = 5}
+pcalod_1 <- VizDimLoadings(object = adata, dims = 1, balanced = TRUE) + theme(axis.text.y = element_text(size = 8)) 
+pcalod_2 <- VizDimLoadings(object = adata, dims = 2, balanced = TRUE) + theme(axis.text.y = element_text(size = 8))
+
+CombinePlots(plots = list(pcalod_1, pcalod_2), ncol = 2)
+```
+
+PCA plot
+```{r PCA_plot, fig.height=5, fig.width=6}
+DimPlot(adata, reduction = "pca", group.by = c('Cell_type'))
+```
+
+# Clustering
+
+Jackstraw method and plot to determine proper number of dimensions. Including elbow plot
+```{r dimension_reduction, fig.height=5, fig.width=7}
+adata <- JackStraw(adata, num.replicate = 100)
+adata <- ScoreJackStraw(adata, dims = 1:20)
+JackStrawPlot(adata, dims = 1:20)
+ElbowPlot(adata)
+```
+
+We could include 6 PCs, but it does not hurt to use more, there are very few cells in this experiment.
+```{r}
+adata <- FindNeighbors(adata, dims = 1:20)
+adata <- FindClusters(adata, random.seed = random_seed)
+```
+
+# Visualization
+
+```{r}
+adata <- RunTSNE(adata, seed.use = random_seed)
+adata <- RunUMAP(adata, dims = 1:20, seed.use = random_seed)
+```
+
+## UMAP
+
+```{r UMAP, fig.height=5, fig.width=12}
+p1 <- DimPlot(adata, reduction = "umap", group.by = 'Cell_type')
+p2 <- DimPlot(adata, reduction = "umap")
+p1 + p2
+```
+
+## TSNE
+
+```{r TSNE, fig.height=5, fig.width=12}
+p3 <- DimPlot(adata, reduction = "tsne", group.by = 'Cell_type')
+p4 <- DimPlot(adata, reduction = "tsne")
+p3 + p4
+```
+
+# scVIz
+Factor preparation for scViz
+
+```{r}
+cell_metadata <- adata@meta.data
+sapply(cell_metadata,class)
+```
+
+
+```{r}
+cell_metadata <- cell_metadata %>% mutate_if(is.character,as.factor)
+adata@meta.data <- cell_metadata
+```
+
+```{r}
+saveRDS(adata, file = "../data/processed/deng_et_al_2014.rds")
+saveRDS(adata, file = "../../../services/scRNAviz/data/deng_et_al_2014.rds")
+```
+
+# Session info
+
+```{r session-info, cache = FALSE}
+devtools::session_info()
+```

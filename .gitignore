@@ -37,3 +37,9 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+
+# Other
+.gitignore
+*.DS_Store
+Slides/*
+Data/*
