@@ -41,5 +41,4 @@ vignettes/*.pdf
 # Other
 .gitignore
 *.DS_Store
-Slides/*
 Data/*

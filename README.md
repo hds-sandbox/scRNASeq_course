@@ -13,7 +13,7 @@ This workshop contains a basic tutorial on how to approach scRNAseq experiments,
 	- Trimming and filtering (TrimGalore)
 	- Alignment (STARsolo)
 	- Demultiplexing (STARsolo)
-	- Feature count (STARsolo
+	- Feature count (STARsolo)
 	- QC (FastQC and MultiQC)
 
 3. Read normalization and QC (Seurat)
