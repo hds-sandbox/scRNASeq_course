@@ -5,7 +5,7 @@ Created: November 2021
 
 NOTE: workshop still under construction
 
-This workshop contains a basic tutorial on how to approach scRNAseq experiments, starting from fastq files out of the sequencer. Thus, the workshop does not include any information of laboratory protocols, library preparation or any wet-lab related procedures. This workshop is based on a collection of modified tutorials from the [nf-core](https://nf-co.re/scrnaseq) pipeline, the [Seurat](https://satijalab.org/seurat/)and [gProfiler2](https://cran.r-project.org/web/packages/gprofiler2/vignettes/gprofiler2.html) vignettes.
+This workshop contains a basic tutorial on how to approach scRNAseq experiments, starting from fastq files out of the sequencer. Thus, the workshop does not include any information of laboratory protocols, library preparation or any wet-lab related procedures. This workshop is based on a collection of modified tutorials from the [nf-core](https://nf-co.re/scrnaseq) pipeline, the [Seurat](https://satijalab.org/seurat/) and [gProfiler2](https://cran.r-project.org/web/packages/gprofiler2/vignettes/gprofiler2.html) vignettes.
 
 ## Syllabus:
 1. Introduction to single cell RNA-Seq
