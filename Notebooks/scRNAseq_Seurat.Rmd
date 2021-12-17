@@ -42,12 +42,15 @@ scRNAseq data analysis of [Deng et al. (2014)](https://www.science.org/doi/10.11
 ![Mouse Early Development https://doi.org/10.1093/molehr/gaw002](../Notes/mouse_development.jpeg)
 
 # Load libraries
-```{r message=FALSE}
+```{r message=FALSE, results='hide'}
 library(rhdf5)
 library(tidyverse)
 library(Seurat)
+library(SeuratWrappers)
 library(patchwork)
 library(biomaRt)
+library(slingshot)
+library(gprofiler2)
 ```
 
 # Load dataset
@@ -64,17 +67,30 @@ metadata <- read.delim("../Data/example_data/GSE45719_metadata.tsv", header = T,
 head(metadata, n = 5)
 ```
 
-For the purposes of this workshop, the metadata of this project has been simplified. The most interesting variable is **Cell_type**, which shows the developmental stage of our cells.
+For the purposes of this workshop, the metadata of this project has been simplified. The most interesting variable is **Cell_type**, which shows the developmental stage of our cells. Cell type is not ordered by its differentiation stage, but we can do that now:
+
+```{r}
+metadata$Cell_type <- factor(metadata$Cell_type, 
+                             levels = c("MII Oocyte","Zygote",
+                                        "Early 2-cell","Mid 2-cell","Late 2-cell",
+                                        "4-cell","8-cell","16-cell",
+                                        "Early blastocyst","Mid blastocyst","Late blastocyst", 
+                                        "Fibroblast","Adult"))
+```
+
+There are some cell types that we are not really interested in, and will be removed in the next step below.
 
 ## Seurat object
 
 Now that we have our data loaded, we can create a **Seurat Object**, from which we will perform our analysis. The function `CreateSeuratObject()` takes as arguments our count matrix, metadata and several options for filtering the data:
+
 - `min.cells` will keep features (genes) that are detected in at least this many cells.
 - `min.features` will keep cells with at least this many features detected.
 
-This will prevent from keeping cells and genes with an immense majority of 0's as values.
+This will prevent from keeping cells and genes with an immense majority of 0's as values. In addition, we are removing some cell types we do not want to analyse.
 ```{r}
-raw_ann <- CreateSeuratObject(counts = raw_data, meta.data = metadata, min.cells = 3, min.features = 200)
+raw_ann <- CreateSeuratObject(counts = raw_data, meta.data = metadata, min.cells = 3, min.features = 200,)
+raw_ann <- subset(raw_ann, cells = colnames(raw_ann)[!raw_ann$Cell_type %in% c("MII Oocyte","Fibroblast","Adult")])
 ```
 
 # Quality Control
@@ -128,7 +144,7 @@ sum(raw_ann$percent.mito)
 
 It is extremely useful to visualize QC measurements calculated so far. Violin plots (fancy boxplots) are a great way to check the distribution of values of all our QC measurements. When initializing the Seurat Object, Seurat calculates also the number of genes detected and the total library size per cell. 
 
-```{r QC_before_filter, fig.width=16, fig.height=5}
+```{r QC_before_filter, fig.width=12, fig.height=5}
 VlnPlot(raw_ann, 
         features = c("nFeature_RNA", "nCount_RNA", "percent.ribo"),
         ncol = 4, group.by = "Cell_type")
@@ -138,7 +154,7 @@ It seems that the late 2-cells have a very high total number of reads. We should
 
 We can check the relationship between library size and number of genes detected:
 
-```{r QC_before_filtering2}
+```{r QC_before_filtering2, fig.height=4, fig.width=6}
 FeatureScatter(raw_ann, feature1 = "nCount_RNA", feature2 = "nFeature_RNA", group.by = "Cell_type")
 ```
 In other experiment with more cells, we might consider removing cells with an unexpectedly high number of detected genes and reads. These cells might be doublets, that is, two cells that were sequenced together! 
@@ -166,7 +182,7 @@ print(paste0("After filtering: ", dim(adata)[2], " cells ",  dim(adata)[1], " ge
 ```
 
 And this is how our filtered data looks like:
-```{r QC_after_filtering, fig.width=16, fig.height=5}
+```{r QC_after_filtering, fig.width=12, fig.height=5}
 VlnPlot(adata, 
         features = c("nFeature_RNA", "nCount_RNA", "percent.ribo"),
         ncol = 4, group.by = "Cell_type")
@@ -174,7 +190,7 @@ VlnPlot(adata,
 
 # Normalization
 
-Now that the data is filtered, we can proceed to normalize our count matrix. Seurat uses log normalization to t normalizes the gene expression measurements for each cell by the total expression, multiplies this by a scale factor (10,000 by default), and log-transforms the result. There have been many methods to normalize the data, but this is the simplest and the most intuitive. The division by total expression is done to change all expression counts to a relative measure, since experience has suggested that technical factors (e.g. capture rate, efficiency of reverse transcription) are largely responsible for the variation in the number of molecules per cell, although genuine biological factors (e.g. cell cycle stage, cell size) also play a smaller, but non-negligible role. The log-transformation is a commonly used transformation that has many desirable properties, such as variance stabilization (can you think of others?).
+Now that the data is filtered, we can proceed to normalize our count matrix. Seurat normalizes the gene expression measurements for each cell by the total expression, multiplies this by a scale factor (10,000 by default), and log-transforms the result. There have been many methods to normalize the data, but this is the simplest and the most intuitive. The division by total expression is done to change all expression counts to a relative measure, since experience has suggested that technical factors (e.g. capture rate, efficiency of reverse transcription) are largely responsible for the variation in the number of molecules per cell, although genuine biological factors (e.g. cell cycle stage, cell size) also play a smaller, but non-negligible role. The log-transformation is a commonly used transformation that has many desirable properties, such as variance stabilization (can you think of others?).
 
 ```{r message=FALSE, warning=FALSE}
 adata <- NormalizeData(adata)
@@ -182,9 +198,9 @@ adata <- FindVariableFeatures(adata, selection.method = "vst", nfeatures = 2000)
 ```
 
 # Identification of Variable Genes 
-Identify most variable genes and label top 10 most highly variable.
-```{r top_variable_genes, fig.width = 7, fig.height=5}
-top10 <- head(VariableFeatures(adata), 10)
+Identify most variable genes and label top 5 most highly variable.
+```{r top_variable_genes, fig.width = 6, fig.height=4}
+top10 <- head(VariableFeatures(adata), 5)
 LabelPoints(plot = VariableFeaturePlot(adata), points = top10, repel = T)
 ```
 
@@ -196,28 +212,29 @@ adata <- ScaleData(adata)
 
 # PCA
 
-```{r}
-adata <- RunPCA(adata, seed.use = random_seed)
+```{r, results='hide'}
+adata <- RunPCA(adata)
 ```
 
-```{r PCA_loadings, fig.height = 5}
+```{r results='hide'}
 pcalod_1 <- VizDimLoadings(object = adata, dims = 1) + theme(axis.text.y = element_text(size = 8)) 
 pcalod_2 <- VizDimLoadings(object = adata, dims = 2) + theme(axis.text.y = element_text(size = 8))
+```
 
+
+```{r PCA_loadings, fig.height = 5, fig.width=10}
 CombinePlots(plots = list(pcalod_1, pcalod_2), ncol = 2)
 ```
 
 Visualization only show negative loadings cause there are many more than positives. We can see a balanced plot using *balance = TRUE*
-```{r PCA_loadings_balanced, fig.height = 5}
+```{r results = 'hide'}
 pcalod_1 <- VizDimLoadings(object = adata, dims = 1, balanced = TRUE) + theme(axis.text.y = element_text(size = 8)) 
 pcalod_2 <- VizDimLoadings(object = adata, dims = 2, balanced = TRUE) + theme(axis.text.y = element_text(size = 8))
-
-CombinePlots(plots = list(pcalod_1, pcalod_2), ncol = 2)
 ```
 
-PCA plot
-```{r PCA_plot, fig.height=5, fig.width=6}
-DimPlot(adata, reduction = "pca", group.by = c('Cell_type'))
+
+```{r PCA_loadings_balanced, fig.height = 5}
+CombinePlots(plots = list(pcalod_1, pcalod_2), ncol = 2)
 ```
 
 # Clustering
@@ -233,14 +250,19 @@ ElbowPlot(adata)
 We could include 6 PCs, but it does not hurt to use more, there are very few cells in this experiment.
 ```{r}
 adata <- FindNeighbors(adata, dims = 1:20)
-adata <- FindClusters(adata, random.seed = random_seed)
+adata <- FindClusters(adata)
 ```
 
 # Visualization
 
 ```{r}
-adata <- RunTSNE(adata, seed.use = random_seed)
-adata <- RunUMAP(adata, dims = 1:20, seed.use = random_seed)
+adata <- RunTSNE(adata)
+adata <- RunUMAP(adata, dims = 1:20)
+```
+## PCA
+```{r PCA_plot, fig.height=5, fig.width=10}
+DimPlot(adata, reduction = "pca", group.by = c('Cell_type')) + 
+  DimPlot(adata, reduction = "pca", group.by = c('seurat_clusters'))
 ```
 
 ## UMAP
@@ -263,16 +285,42 @@ p3 + p4
 
 Differential testing works a bit different than in bulk RNA-Seq analysis. Usually, your experiment will include dozens or hundreds of cells per cluster/condition. We can make use of Wilcox tests and multiple testing correction to identify statistically significant genes using the `FindAllMarkers()` function. This function will gather all "markers" for each of your *Ident* variable values (your conditions or identified clusters). 
 ```{r}
-markers <- FindAllMarkers(adata,logfc.threshold = 0.5)
+markers <- FindAllMarkers(adata,logfc.threshold = 0.5, only.pos = T)
 ```
 
 On the other hand, if you want to make a specific comparison, you can use the `FindMarkers()` function:
 ```{r}
-cluster2.markers <- FindMarkers(pbmc, ident.1 = 2, min.pct = 0.25) # Only cluster 2 markers
-cluster5.markers <- FindMarkers(pbmc, ident.1 = 5, ident.2 = c(0, 3), # Differences between cluster 5 and clusters 0 and 3
-                                min.pct = 0.25) 
+cluster2.markers <- FindMarkers(adata, ident.1 = 2, min.pct = 0.5, only.pos = T) # Only cluster 2 markers
 ```
 
+Even compare specific clusters against others by selecting `ident.1` and `ident.2`:
+```{r}
+cluster5.markers <- FindMarkers(adata, ident.1 = 5, ident.2 = c(0, 3), # Differences between cluster 5 and clusters 0 and 3
+                                min.pct = 0.5, only.pos = T) 
+```
+
+## Visualizations
+
+We can visualize all markers in a heatmap just like this! To go easy on the visualization, we only use the top 10 markers.
+```{r, fig.height=6}
+markers %>%
+    group_by(cluster) %>%
+    top_n(n = 10, wt = avg_log2FC) -> top10
+DoHeatmap(adata, features = top10$gene) + NoLegend()
+```
+
+We can also plot the expression on our PCA, tSNE or UMAP. We only need to pass a vector of genes to the `features` argument of `FeaturePlot()`
+
+```{r}
+FeaturePlot(adata, features = top10$gene[1:4], reduction = "pca")
+```
+Or as a violin plot, a ridge plot or a dot plot
+```{r, fig.height=5, fig.width=7}
+VlnPlot(adata, features = top10$gene[1]) + RidgePlot(adata, features = top10$gene[1])
+```
+```{r}
+DotPlot(adata, features = top10$gene[1:10])
+```
 
 # Functional analysis with gprofiler2
 `gost()` function allows us to do functional profiling of gene lists, such as our differentially expressed genes. The function performs statistical enrichment analysis to find over-representation of terms from Gene Ontology, biological pathways like KEGG and Reactome, human disease annotations, etc. This is done by using hypergeometric tests that are corrected for multiple testing.
@@ -283,7 +331,7 @@ A standard input of the `gost()` function is a (named) list of gene identifiers.
 The result is a named list where *result* is a data.frame with the enrichment analysis results and *meta* containing a named list with all the metadata for the query.
 
 ```{r}
-gostres <- gost(query = rownames(sig_res), 
+gostres <- gost(query = rownames(cluster2.markers), 
                 organism = "mmusculus", ordered_query = FALSE, 
                 multi_query = FALSE, significant = FALSE, exclude_iea = FALSE, 
                 measure_underrepresentation = FALSE, evcodes = FALSE, 
@@ -328,7 +376,7 @@ head(multi_gostres2$result, 3)
 The enrichment results are visualized with a Manhattan-like-plot using the function `gostplot()` and the previously found gost results *gostres*:
 
 ```{r gost_interactive}
-gostplot(gostres, capped = TRUE, interactive = TRUE)
+#gostplot(gostres, capped = TRUE, interactive = TRUE)
 ```
 
 The function `publish_gostplot()` takes the static plot object as an input and enables to highlight a selection of interesting terms from the results with numbers and table of results. These can be set with parameter highlight_terms listing the term IDs in a vector or as a data.frame with column “term_id” such as a subset of the result dataframe.
@@ -341,17 +389,64 @@ p
 
 Then we make it in high quality. We can add highlighted terms if we want with the *highlight_terms* argument.
 ```{r gost_publishing}
-pp <- publish_gostplot(p, highlight_terms = c("GO:0005372"),
+pp <- publish_gostplot(p, highlight_terms = c("CORUM:3047"),
                        width = NA, height = NA, filename = NULL )
 ```
 
 The gost results can also be visualized with a table. The `publish_gosttable()` function will create a nice-looking table with the result statistics for the highlight_terms from the result data.frame. The highlight_terms can be a vector of term IDs or a subset of the results.
 
-```{r gost_table, fig.height=5, fig.width=10}
+```{r gost_table}
 publish_gosttable(gostres, highlight_terms = gostres$result[c(1:10),],
                         use_colors = TRUE, 
                         show_columns = c("source", "term_name", "term_size", "intersection_size"),
                         filename = NULL) 
+```
+
+# Pseudotime
+
+We will use the package [Slignshot](https://bioconductor.org/packages/release/bioc/vignettes/slingshot/inst/doc/vignette.html). Slingshot was designed to model developmental trajectories in single-cell RNA sequencing data and serve as a component in an analysis pipeline after dimensionality reduction and clustering.
+
+```{r}
+adata_SCE <- as.SingleCellExperiment(adata)
+sde <- slingshot(adata_SCE, reducedDim = 'PCA')
+```
+
+The using the `slingshot` package it is possible to plot our components and the calculated trajectory. Unfortunately, it does not work with ggplot. 
+
+```{r}
+cols <- colorRampPalette(viridis::viridis(3))
+cols <- cols(50)[cut(sde$slingPseudotime_1, breaks=50)]
+plot(reducedDim(adata_SCE, "PCA"), pch=16, col = cols) # adata_SCE contains, PC1 and PC2, and colored by pseudotime
+lines(slingshot::SlingshotDataSet(sde), lwd = 2) # here we plot the trajectory
+```
+
+It is possible to create a `FeaturePlot()` with both pseudotime and the trajectory by extracting the information from our `slingshot` object and add it to our `Seurat` object, but it is a bit inconvenient. First, pseudotime can be extracted with the function `slingPseudotime()`. The trajectory curves are stored inside the slingshot object `sde`; in this case, it is easier since there is only one trajectory. 
+
+```{r}
+adata$pseudotime <- slingPseudotime(sde)
+trajectory <- data.frame(SlingshotDataSet(sde)@curves[["Lineage1"]][["s"]])
+head(trajectory)
+```
+
+Now we can use Seurat functions to plot the pseudotime and the calculated trajectory!
+```{r fig.height = 4, fig.width=5}
+FeaturePlot(adata, features = "pseudotime", reduction = "pca") + scale_color_viridis_c() + geom_path(data = trajectory, aes(x = PC_1, y = PC_2))
+```
+
+```{r fig.height = 4, fig.width = 5.7}
+DimPlot(adata, group.by = "Cell_type", reduction = "pca")
+```
+
+We can create a plot that sorts our cells by pseudotime and check that it corresponds to their cell type
+```{r}
+adata_SCE$pseudotime <- as.numeric(slingPseudotime(sde))
+ggplot(as.data.frame(colData(adata_SCE)), aes(x = pseudotime,
+                                             y = Cell_type,
+                                             colour = Cell_type)) +
+  ggbeeswarm::geom_quasirandom(groupOnX = FALSE) +
+  theme_classic() +
+  xlab("Slingshot pseudotime") + ylab("Timepoint") +
+  ggtitle("Cells ordered by Slingshot pseudotime")
 ```
 
 # Session info
