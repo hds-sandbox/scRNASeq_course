@@ -6,7 +6,7 @@ knit: (function(inputFile, encoding) {
       rmarkdown::render(inputFile,
                         encoding=encoding,
                         output_format='all',
-                        output_dir='../reports/')})
+                        output_dir='./')})
 output:
   # To create PDF report, uncomment below
   #pdf_document:
@@ -39,7 +39,7 @@ knitr::opts_chunk$set(autodep        = TRUE,
 
 scRNAseq data analysis of [Deng et al. (2014)](https://www.science.org/doi/10.1126/science.1245316). This study follows the early embryonic development of mouse cells from zygote to late blastocists (and some adult cells).
 
-![Mouse Early Development https://doi.org/10.1093/molehr/gaw002](../Notes/mouse_development.jpeg)
+![Mouse Early Development https://doi.org/10.1093/molehr/gaw002](../../Notes/mouse_development.jpeg)
 
 # Load libraries
 ```{r message=FALSE, results='hide'}
@@ -57,13 +57,13 @@ library(gprofiler2)
 
 Data is a matrix of cells in columns and genes in rows. We specify that the row names (our genes) are in the first column.
 ```{r message=FALSE}
-raw_data <- read.delim("../Data/example_data/GSE45719_cts.txt", sep = "\t", row.names = 1)
+raw_data <- read.delim("../../Data/example_data/GSE45719_cts.txt", sep = "\t", row.names = 1)
 head(raw_data, n = 5)
 ```
 
 Here is the metadata. The column names of `raw_data` are the same as the row names of metadata.
 ```{r}
-metadata <- read.delim("../Data/example_data/GSE45719_metadata.tsv", header = T, sep = "\t", quote = "", stringsAsFactors = F, row.names = 1)
+metadata <- read.delim("../../Data/example_data/GSE45719_metadata.tsv", header = T, sep = "\t", quote = "", stringsAsFactors = F, row.names = 1)
 head(metadata, n = 5)
 ```
 
@@ -188,7 +188,9 @@ VlnPlot(adata,
         ncol = 4, group.by = "Cell_type")
 ```
 
-# Normalization
+# Exploratory analysis
+
+## Normalization
 
 Now that the data is filtered, we can proceed to normalize our count matrix. Seurat normalizes the gene expression measurements for each cell by the total expression, multiplies this by a scale factor (10,000 by default), and log-transforms the result. There have been many methods to normalize the data, but this is the simplest and the most intuitive. The division by total expression is done to change all expression counts to a relative measure, since experience has suggested that technical factors (e.g. capture rate, efficiency of reverse transcription) are largely responsible for the variation in the number of molecules per cell, although genuine biological factors (e.g. cell cycle stage, cell size) also play a smaller, but non-negligible role. The log-transformation is a commonly used transformation that has many desirable properties, such as variance stabilization (can you think of others?).
 
@@ -197,25 +199,27 @@ adata <- NormalizeData(adata)
 adata <- FindVariableFeatures(adata, selection.method = "vst", nfeatures = 2000)
 ```
 
-# Identification of Variable Genes 
+## Identification of Variable Genes 
 Identify most variable genes and label top 5 most highly variable.
 ```{r top_variable_genes, fig.width = 6, fig.height=4}
 top10 <- head(VariableFeatures(adata), 5)
 LabelPoints(plot = VariableFeaturePlot(adata), points = top10, repel = T)
 ```
 
-# Scale
+## Scale
 
+Gene expression scaling is necessary for proper clustering of our cells. Since genes may be expressed in very different orders of magnitude, extreme expression levels may drive the separation between cells and bias the results.
 ```{r message=FALSE, warning=FALSE, results='hide'}
 adata <- ScaleData(adata)
 ```
 
-# PCA
+## PCA
 
+We can perform a Principal Component analysis using the following function. PCA can be used for visualization of our cells, as well as clustering and other dimensionality reduction methods such as t-SNE or UMAP.
 ```{r, results='hide'}
 adata <- RunPCA(adata)
 ```
-
+We can also calculate and visualize the importance of each gene for each Principal Component.
 ```{r results='hide'}
 pcalod_1 <- VizDimLoadings(object = adata, dims = 1) + theme(axis.text.y = element_text(size = 8)) 
 pcalod_2 <- VizDimLoadings(object = adata, dims = 2) + theme(axis.text.y = element_text(size = 8))
@@ -237,20 +241,37 @@ pcalod_2 <- VizDimLoadings(object = adata, dims = 2, balanced = TRUE) + theme(ax
 CombinePlots(plots = list(pcalod_1, pcalod_2), ncol = 2)
 ```
 
-# Clustering
+## Cell clustering
+Now that we have calculated our components, we can proceed to select the number of PCs necessary to perform clustering. There are two methods that we can use to determine the proper number of dimensions:
 
-Jackstraw method and plot to determine proper number of dimensions. Including elbow plot
-```{r dimension_reduction, fig.height=5, fig.width=7}
+### PC selection
+
+**Jackstraw method**
+
+The Jackstraw method randomly permutes a subset of data, and calculates projected PCA scores for these 'random' genes. Then compares the PCA scores for the 'random' genes with the observed PCA scores to determine statistical significance. End result is a p-value for each gene's association with each principal component.
+
+```{r jackstraw, fig.height=5, fig.width=7}
 adata <- JackStraw(adata, num.replicate = 100)
 adata <- ScoreJackStraw(adata, dims = 1:20)
 JackStrawPlot(adata, dims = 1:20)
+```
+
+As you can see in the plot above, there is a change in the orders of magnitude of the PCs' p-values. Suggesting that we may cut off around PC8. 
+
+**Elbow method**
+
+The elbow method allows us to explore the explained variation of each of the Principal Components. The plot usually looks like an "elbow", where adding more PCs does not really contribute to the amount of explained variation. We can see again that we reach a plateau around PC6 or PC8.
+
+```{r elbow_plot}
 ElbowPlot(adata)
 ```
 
-We could include 6 PCs, but it does not hurt to use more, there are very few cells in this experiment.
+### Clustering
+We could include 6 PCs, but it does not hurt to use more; there are very few cells in this experiment and we would like to include as much information as possible. Use the `resolution` argument of the `FindClusters()` function to fine-tune the number of clusters to find. The larger the number the less clusters it will find.
+
 ```{r}
 adata <- FindNeighbors(adata, dims = 1:20)
-adata <- FindClusters(adata)
+adata <- FindClusters(adata, resolution = 0.8)
 ```
 
 # Visualization
@@ -259,6 +280,7 @@ adata <- FindClusters(adata)
 adata <- RunTSNE(adata)
 adata <- RunUMAP(adata, dims = 1:20)
 ```
+
 ## PCA
 ```{r PCA_plot, fig.height=5, fig.width=10}
 DimPlot(adata, reduction = "pca", group.by = c('Cell_type')) + 
@@ -266,16 +288,14 @@ DimPlot(adata, reduction = "pca", group.by = c('Cell_type')) +
 ```
 
 ## UMAP
-
-```{r UMAP, fig.height=5, fig.width=12}
+```{r UMAP_plot, fig.height=5, fig.width=12}
 p1 <- DimPlot(adata, reduction = "umap", group.by = 'Cell_type')
 p2 <- DimPlot(adata, reduction = "umap")
 p1 + p2
 ```
 
 ## TSNE
-
-```{r TSNE, fig.height=5, fig.width=12}
+```{r TSNE_plot, fig.height=5, fig.width=12}
 p3 <- DimPlot(adata, reduction = "tsne", group.by = 'Cell_type')
 p4 <- DimPlot(adata, reduction = "tsne")
 p3 + p4
@@ -288,9 +308,18 @@ Differential testing works a bit different than in bulk RNA-Seq analysis. Usuall
 markers <- FindAllMarkers(adata,logfc.threshold = 0.5, only.pos = T)
 ```
 
+```{r}
+markers %>%
+    group_by(cluster) %>%
+    top_n(n = 10, wt = avg_log2FC) -> top10
+
+head(top10)
+```
+
 On the other hand, if you want to make a specific comparison, you can use the `FindMarkers()` function:
 ```{r}
 cluster2.markers <- FindMarkers(adata, ident.1 = 2, min.pct = 0.5, only.pos = T) # Only cluster 2 markers
+cluster2.markers %>% arrange(desc(avg_log2FC)) %>% head(10)
 ```
 
 Even compare specific clusters against others by selecting `ident.1` and `ident.2`:
@@ -302,23 +331,21 @@ cluster5.markers <- FindMarkers(adata, ident.1 = 5, ident.2 = c(0, 3), # Differe
 ## Visualizations
 
 We can visualize all markers in a heatmap just like this! To go easy on the visualization, we only use the top 10 markers.
-```{r, fig.height=6}
-markers %>%
-    group_by(cluster) %>%
-    top_n(n = 10, wt = avg_log2FC) -> top10
+```{r DEA_heatmap, fig.height=6}
 DoHeatmap(adata, features = top10$gene) + NoLegend()
 ```
 
 We can also plot the expression on our PCA, tSNE or UMAP. We only need to pass a vector of genes to the `features` argument of `FeaturePlot()`
-
-```{r}
+```{r DEA_feature}
 FeaturePlot(adata, features = top10$gene[1:4], reduction = "pca")
 ```
-Or as a violin plot, a ridge plot or a dot plot
-```{r, fig.height=5, fig.width=7}
+
+Or as a violin plot, a ridge plot or a dot plot.
+```{r DEA_violin, fig.height=5, fig.width=7}
 VlnPlot(adata, features = top10$gene[1]) + RidgePlot(adata, features = top10$gene[1])
 ```
-```{r}
+
+```{r DEA_dotplot}
 DotPlot(adata, features = top10$gene[1:10])
 ```
 
@@ -413,7 +440,7 @@ sde <- slingshot(adata_SCE, reducedDim = 'PCA')
 
 The using the `slingshot` package it is possible to plot our components and the calculated trajectory. Unfortunately, it does not work with ggplot. 
 
-```{r}
+```{r sling_pseudo_plot}
 cols <- colorRampPalette(viridis::viridis(3))
 cols <- cols(50)[cut(sde$slingPseudotime_1, breaks=50)]
 plot(reducedDim(adata_SCE, "PCA"), pch=16, col = cols) # adata_SCE contains, PC1 and PC2, and colored by pseudotime
@@ -429,7 +456,7 @@ head(trajectory)
 ```
 
 Now we can use Seurat functions to plot the pseudotime and the calculated trajectory!
-```{r fig.height = 4, fig.width=5}
+```{r pseudo_plot, fig.height = 4, fig.width=5}
 FeaturePlot(adata, features = "pseudotime", reduction = "pca") + scale_color_viridis_c() + geom_path(data = trajectory, aes(x = PC_1, y = PC_2))
 ```
 
@@ -437,8 +464,8 @@ FeaturePlot(adata, features = "pseudotime", reduction = "pca") + scale_color_vir
 DimPlot(adata, group.by = "Cell_type", reduction = "pca")
 ```
 
-We can create a plot that sorts our cells by pseudotime and check that it corresponds to their cell type
-```{r}
+We can create a plot that sorts our cells by pseudotime and check that it corresponds to their cell type:
+```{r pseudo_order}
 adata_SCE$pseudotime <- as.numeric(slingPseudotime(sde))
 ggplot(as.data.frame(colData(adata_SCE)), aes(x = pseudotime,
                                              y = Cell_type,
