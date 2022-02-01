@@ -235,7 +235,7 @@
   
   
     <li class="md-nav__item">
-      <a href="notebooks/Part01_read_the_data.ipynb" class="md-nav__link">
+      <a href="python/Part01_read_the_data/" class="md-nav__link">
         Read the data
       </a>
     </li>
@@ -249,8 +249,8 @@
   
   
     <li class="md-nav__item">
-      <a href="notebooks/Part02_filtering_sample2.ipynb" class="md-nav__link">
-        Preprocessing
+      <a href="python/Part02_filtering_sample2/" class="md-nav__link">
+        Quality Control (QC) and filtering
       </a>
     </li>
   
@@ -263,8 +263,8 @@
   
   
     <li class="md-nav__item">
-      <a href="notebooks/part03_normalize_and_integrate.ipynb" class="md-nav__link">
-        Normalize and integrate
+      <a href="python/Part03_normalize_and_integrate/" class="md-nav__link">
+        Normalize and Integrate
       </a>
     </li>
   
@@ -277,8 +277,8 @@
   
   
     <li class="md-nav__item">
-      <a href="notebooks/Part04_clustering.ipynb" class="md-nav__link">
-        Clustering and Differential Expression
+      <a href="python/Part04_clustering/" class="md-nav__link">
+        Cell clustering and Differential Expression (DE)
       </a>
     </li>
   
@@ -291,8 +291,8 @@
   
   
     <li class="md-nav__item">
-      <a href="notebooks/Part05_cell_fate.ipynb" class="md-nav__link">
-        Pseudotimes and Cell Fate
+      <a href="python/Part05_cell_fate/" class="md-nav__link">
+        Pseudotimes and cell fates
       </a>
     </li>
   
@@ -365,7 +365,7 @@
 <hr />
 <h2 id="biological-background-and-motivation">Biological background and motivation</h2>
 <p>The testis is a complex organ composed of multiple cell types: germ cells at different stages of maturation and several somatic cell types supporting testicular structure and spermatogen-esis; Sertoli cells, peritubular cells, Leydig cells and other interstitial cells, as outlined in the figure below.</p>
-<p><img alt="" src="/img/celltypes.png" /></p>
+<p><img alt="" src="img/celltypes.png" /></p>
 <p>Technological developments have recently made it possible to perform single-cell RNA sequencing (scRNAseq) of all cell types in a tissue. Understanding how scRNAseq data is processed and how to interpret the data is crucial for our ability to draw correct biological conclusions.</p>
 <p>In this introduction we will preprocess and integrate multiple datasets together and perform an analysis to detect cell types, developmental stages, genes dominating in the various cell types, in a way that the spermatogenic process can be framed and characterized as an output of this course.</p>
 <p>Infertility is a growing problem, especially in the Western world, where approximately 10–15% of couples are infertile. In line with this, we have observed a tremendous increase in the use of assisted reproductive techniques (ART) and espe-cially Intracytoplasmic Sperm Injection.  In about half of the infertile couples, the cause involves a male-factor (Agarwal et al. 2015; Barratt et al. 2017). One of the most severe forms of male infertility is azoo-spermia (from Greek azo - meaning “without life”) where no spermatozoa can be detected in the ejaculate, which ren-ders biological fatherhood difficult. Azoospermia is found in approximately 10–15% of infertile men (Jarow et al. 1989; Olesen et al. 2017) and the aetiology is thought to be primarily genetic.  </p>
@@ -389,11 +389,11 @@ wget https://aarhusuniversitet-my.sharepoint.com/:u:/g/personal/au612681_uni_au_
 <div class="highlight"><pre><span></span><code>cd ../../Environments/Python
 conda env create --file scrna_twodays.yml
 </code></pre></div>
-<p>install a couple of remaining packages</p>
-<div class="highlight"><pre><span></span><code>Rscript R_install.R
-</code></pre></div>
-<p>Finally, activate you conda environment by</p>
+<p>Activate you conda environment by</p>
 <div class="highlight"><pre><span></span><code>conda activate scrna_test_environment
+</code></pre></div>
+<p>Finally, install a couple of remaining packages</p>
+<div class="highlight"><pre><span></span><code>Rscript R_install.R
 </code></pre></div>
 
               
@@ -404,6 +404,26 @@ conda env create --file scrna_twodays.yml
       </main>
       
         <footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+      
+        
+        <a href="python/Part01_read_the_data/" class="md-footer__link md-footer__link--next" aria-label="Next: Read the data" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Read the data
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
