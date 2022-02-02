@@ -2,22 +2,23 @@
 title: "scRNAseq analysis for Deng et al. (2014)"
 author: "Jose Alejandro Romero Herrera"
 date: '`r Sys.Date()`'
-knit: (function(inputFile, encoding) { 
-      rmarkdown::render(inputFile,
-                        encoding=encoding,
-                        output_format='all',
-                        output_dir='./')})
+# knit: (function(inputFile, encoding) { 
+#       rmarkdown::render(inputFile,
+#                         encoding=encoding,
+#                         output_format='all',
+#                         output_dir='./')})
 output:
   # To create PDF report, uncomment below
   #pdf_document:
   #  toc: yes
-  html_document:
-    number_sections: yes
-    theme: yeti
-    toc: yes
-    toc_float: yes
-    df_print: paged
-    dev: png
+  # html_document:
+  #   number_sections: yes
+  #   theme: yeti
+  #   toc: yes
+  #   toc_float: yes
+  #   df_print: paged
+  #   dev: png
+  md_document
 ---
 
 ```{r knitr, include = FALSE}
