@@ -10,7 +10,7 @@ nav:
     - 'R':
       - Data analysis: scRNAseq_Seurat.md
 docs_dir: develop
-site_dir: docs
+site_dir: ../docs
 plugins:
     - mkdocs-jupyter
 extra_css:
