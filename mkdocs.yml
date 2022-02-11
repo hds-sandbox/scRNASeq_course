@@ -7,6 +7,9 @@ nav:
       - Normalize and integrate: python/Part03_normalize_and_integrate.ipynb
       - Clustering and Differential Expression: python/Part04_clustering.ipynb
       - Pseudotimes and Cell Fate: python/Part05_cell_fate.ipynb
+      - Dataset comparisons and gene enrichment: python/Part06_Condition_analysis.ipynb
+      - 'Extra':
+        - preprocessing sample 3: python/Part02_filtering_sample3.ipynb
     - 'R':
       - Data analysis: scRNAseq_Seurat.md
 docs_dir: develop
