@@ -1,7 +1,8 @@
 site_name: 'Single cell sequencing data analysis - an introductiory but comprehensive course'
 nav:
-    - 'Course Introduction': index.md
-    - 'Python':
+ - 'Course Introduction': index.md
+ - 'Python':
+      - Setup and installation: python/installation.md
       - Read the data: python/Part01_read_the_data.ipynb
       - Preprocessing: python/Part02_filtering_sample2.ipynb
       - Normalize and integrate: python/Part03_normalize_and_integrate.ipynb
@@ -9,8 +10,9 @@ nav:
       - Pseudotimes and Cell Fate: python/Part05_cell_fate.ipynb
       - Gene enrichment: python/Part06_Condition_analysis.ipynb
       - 'Extra':
-        - Preprocessing sample 3': python/Part02_filtering_sample3.ipynb
-    - 'R':
+        - Preprocessing a sample': python/Part02_filtering_sample3.ipynb
+        - Preprocessing a low quality sample: python/Part02_filtering_sample1.ipynb
+ - 'R':
       - Data analysis: scRNAseq_Seurat.md
 docs_dir: develop
 site_dir: docs
@@ -18,6 +20,8 @@ plugins:
     - mkdocs-jupyter
 extra_css:
     - extra.css
+extra_javascript:
+  - javascripts/embed-amd.js
 theme: 
     name: material
     #logo: 'img/logo.png'

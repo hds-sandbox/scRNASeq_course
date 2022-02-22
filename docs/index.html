@@ -186,13 +186,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#setup-for-coding" class="md-nav__link">
-    Setup for coding
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -228,6 +221,20 @@
           Python
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="python/installation/" class="md-nav__link">
+        Setup and installation
+      </a>
+    </li>
+  
+
+            
           
             
               
@@ -322,18 +329,18 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_7" type="checkbox" id="__nav_2_7" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_8" type="checkbox" id="__nav_2_8" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_2_7">
+        <label class="md-nav__link" for="__nav_2_8">
           Extra
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Extra" data-md-level="2">
-        <label class="md-nav__title" for="__nav_2_7">
+        <label class="md-nav__title" for="__nav_2_8">
           <span class="md-nav__icon md-icon"></span>
           Extra
         </label>
@@ -353,8 +360,15 @@
 
             
           
-        </ul>
-      </nav>
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="python/Part02_filtering_sample1/" class="md-nav__link">
+        Filtering a low quality sample
+      </a>
     </li>
   
 
@@ -365,11 +379,10 @@
     </li>
   
 
-    
-      
-      
-      
-
+            
+          
+            
+              
   
   
   
@@ -377,18 +390,18 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_9" type="checkbox" id="__nav_2_9" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_3">
+        <label class="md-nav__link" for="__nav_2_9">
           R
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <nav class="md-nav" aria-label="R" data-md-level="1">
-        <label class="md-nav__title" for="__nav_3">
+      <nav class="md-nav" aria-label="R" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_9">
           <span class="md-nav__icon md-icon"></span>
           R
         </label>
@@ -403,6 +416,13 @@
       <a href="scRNAseq_Seurat/" class="md-nav__link">
         Data analysis
       </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
     </li>
   
 
@@ -447,13 +467,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#setup-for-coding" class="md-nav__link">
-    Setup for coding
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -479,31 +492,6 @@
 <p>In this introduction we will preprocess and integrate multiple datasets together and perform an analysis to detect cell types, developmental stages, genes dominating in the various cell types, in a way that the spermatogenic process can be framed and characterized as an output of this course.</p>
 <p>Infertility is a growing problem, especially in the Western world, where approximately 10–15% of couples are infertile. In line with this, we have observed a tremendous increase in the use of assisted reproductive techniques (ART) and espe-cially Intracytoplasmic Sperm Injection.  In about half of the infertile couples, the cause involves a male-factor (Agarwal et al. 2015; Barratt et al. 2017). One of the most severe forms of male infertility is azoo-spermia (from Greek azo - meaning “without life”) where no spermatozoa can be detected in the ejaculate, which ren-ders biological fatherhood difficult. Azoospermia is found in approximately 10–15% of infertile men (Jarow et al. 1989; Olesen et al. 2017) and the aetiology is thought to be primarily genetic.  </p>
 <p>As the last step of this course, we will use a dataset of azoospermic cells to make a comparative analysis against the healthy cells. We will try to find which developmental processes are more highlighted in only one of the two datasets, and see which other differences characterize the azoospermic single cell data.</p>
-<hr />
-<h2 id="setup-for-coding">Setup for coding</h2>
-<p>Open your terminal and download the repository for this course:</p>
-<p><code>git clone https://github.com/hds-sandbox/scRNASeq_course.git</code></p>
-<p>Download the datasets into the data folder (a few GigaBytes each)</p>
-<div class="highlight"><pre><span></span><code>mkdir -p scRNAseq_course/Data/notebooks_data
-
-cd scRNAseq_course/Data/notebooks_data
-
-wget https://aarhusuniversitet-my.sharepoint.com/:u:/g/personal/au612681_uni_au_dk/Ef-p9YNvrrZJp0s5gqRJ02YBg19brRA0o6JQ49S3MR-lYA?email=jose.romero%40sund.ku.dk&amp;e=o5MuQw
-
-wget https://aarhusuniversitet-my.sharepoint.com/:u:/g/personal/au612681_uni_au_dk/Ecvn2TQ_BfVIlAFB4QLvJrEBaBGx1Rqcr_itY0U8jlS2gg?email=jose.romero%40sund.ku.dk&amp;e=RhJTDL
-
-wget https://aarhusuniversitet-my.sharepoint.com/:u:/g/personal/au612681_uni_au_dk/EcfQhugmdARDrp-3QVOXFXABEc1EdrGBZ3dkeuit9vvrsw?email=jose.romero%40sund.ku.dk&amp;e=tSYM5U
-</code></pre></div>
-<p>Now, install the required packages by creating a conda environment:</p>
-<div class="highlight"><pre><span></span><code>cd ../../Environments/Python
-conda env create --file scrna_twodays.yml
-</code></pre></div>
-<p>Activate you conda environment by</p>
-<div class="highlight"><pre><span></span><code>conda activate scrna_test_environment
-</code></pre></div>
-<p>Finally, install a couple of remaining packages</p>
-<div class="highlight"><pre><span></span><code>Rscript R_install.R
-</code></pre></div>
 
               
             </article>
@@ -518,13 +506,13 @@ conda env create --file scrna_twodays.yml
       
       
         
-        <a href="python/Part01_read_the_data/" class="md-footer__link md-footer__link--next" aria-label="Next: Read the data" rel="next">
+        <a href="python/installation/" class="md-footer__link md-footer__link--next" aria-label="Next: Setup and installation" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              Read the data
+              Setup and installation
             </div>
           </div>
           <div class="md-footer__button md-icon">
@@ -558,6 +546,8 @@ conda env create --file scrna_twodays.yml
     
     
       <script src="assets/javascripts/bundle.e1a181d9.min.js"></script>
+      
+        <script src="javascripts/embed-amd.js"></script>
       
     
   </body>

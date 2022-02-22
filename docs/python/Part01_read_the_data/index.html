@@ -187,6 +187,20 @@
               
   
   
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        Setup and installation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
     
   
   
@@ -331,18 +345,18 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_7" type="checkbox" id="__nav_2_7" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_8" type="checkbox" id="__nav_2_8" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_2_7">
+        <label class="md-nav__link" for="__nav_2_8">
           Extra
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Extra" data-md-level="2">
-        <label class="md-nav__title" for="__nav_2_7">
+        <label class="md-nav__title" for="__nav_2_8">
           <span class="md-nav__icon md-icon"></span>
           Extra
         </label>
@@ -362,8 +376,15 @@
 
             
           
-        </ul>
-      </nav>
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Part02_filtering_sample1/" class="md-nav__link">
+        Filtering a low quality sample
+      </a>
     </li>
   
 
@@ -374,11 +395,10 @@
     </li>
   
 
-    
-      
-      
-      
-
+            
+          
+            
+              
   
   
   
@@ -386,18 +406,18 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_9" type="checkbox" id="__nav_2_9" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_3">
+        <label class="md-nav__link" for="__nav_2_9">
           R
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <nav class="md-nav" aria-label="R" data-md-level="1">
-        <label class="md-nav__title" for="__nav_3">
+      <nav class="md-nav" aria-label="R" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_9">
           <span class="md-nav__icon md-icon"></span>
           R
         </label>
@@ -412,6 +432,13 @@
       <a href="../../scRNAseq_Seurat/" class="md-nav__link">
         Data analysis
       </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
     </li>
   
 
@@ -1176,7 +1203,7 @@ all of MD as it is not optimized for dense, information rich UIs.
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[1]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[2]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="zeroclipboard-container">
@@ -1223,7 +1250,7 @@ import sklearn</div>
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[2]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="zeroclipboard-container">
@@ -1321,8 +1348,10 @@ calculate_qc_metrics(adata: anndata._core.anndata.AnnData, *, expr_type: str = &
     
     `total_{expr_type}`
         E.g. &#34;total_counts&#34;. Sum of counts for a gene.
+    `n_genes_by_{expr_type}`
+        E.g. &#34;n_genes_by_counts&#34;. The number of genes with at least 1 count in a cell. Calculated for all cells.
     `mean_{expr_type}`
-        E.g. &#34;mean counts&#34;. Mean expression over all cells.
+        E.g. &#34;mean_counts&#34;. Mean expression over all cells.
     `n_cells_by_{expr_type}`
         E.g. &#34;n_cells_by_counts&#34;. Number of cells this expression is
         measured in.
@@ -1334,14 +1363,26 @@ calculate_qc_metrics(adata: anndata._core.anndata.AnnData, *, expr_type: str = &
     -------
     Calculate qc metrics for visualization.
     
-    &gt;&gt;&gt; import scanpy as sc
-    &gt;&gt;&gt; import seaborn as sns
-    &gt;&gt;&gt; adata = sc.datasets.pbmc3k()
-    &gt;&gt;&gt; sc.pp.calculate_qc_metrics(adata, inplace=True)
-    &gt;&gt;&gt; sns.jointplot(
-            &#34;log1p_total_counts&#34;, &#34;log1p_n_genes_by_counts&#34;,
-            data=adata.obs, kind=&#34;hex&#34;
+    .. plot::
+        :context: close-figs
+    
+        import scanpy as sc
+        import seaborn as sns
+    
+        pbmc = sc.datasets.pbmc3k()
+        pbmc.var[&#34;mito&#34;] = pbmc.var_names.str.startswith(&#34;MT-&#34;)
+        sc.pp.calculate_qc_metrics(pbmc, qc_vars=[&#34;mito&#34;], inplace=True)
+        sns.jointplot(
+            data=pbmc.obs,
+            x=&#34;log1p_total_counts&#34;,
+            y=&#34;log1p_n_genes_by_counts&#34;,
+            kind=&#34;hex&#34;,
         )
+    
+    .. plot::
+        :context: close-figs
+    
+        sns.histplot(pbmc.obs[&#34;pct_counts_mito&#34;])
 
 </pre>
 </div>
@@ -1363,7 +1404,7 @@ calculate_qc_metrics(adata: anndata._core.anndata.AnnData, *, expr_type: str = &
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[2]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[17]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="zeroclipboard-container">
@@ -1377,9 +1418,9 @@ calculate_qc_metrics(adata: anndata._core.anndata.AnnData, *, expr_type: str = &
             </clipboard-copy>
         </div>
         <div class="CodeMirror cm-s-jupyter">
-            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">sample_2</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">read_10x_mtx</span><span class="p">(</span><span class="s1">&#39;../Data/cellranger/cellranger_sample2/outs/filtered_feature_bc_matrix/&#39;</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">sample_2</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">read_10x_mtx</span><span class="p">(</span><span class="s1">&#39;../../../../sandbox_scRNA_testAndFeedback/scRNASeq_course/Data/cellranger_sample2/outs/filtered_feature_bc_matrix/&#39;</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
-<div id="cell-3" class="clipboard-copy-txt">sample_2 = sc.read_10x_mtx('../Data/cellranger/cellranger_sample2/outs/filtered_feature_bc_matrix/', cache=True)</div>
+<div id="cell-3" class="clipboard-copy-txt">sample_2 = sc.read_10x_mtx('../../../../sandbox_scRNA_testAndFeedback/scRNASeq_course/Data/cellranger_sample2/outs/filtered_feature_bc_matrix/', cache=True)</div>
     
         </div>
     </div>
@@ -1392,7 +1433,7 @@ calculate_qc_metrics(adata: anndata._core.anndata.AnnData, *, expr_type: str = &
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="zeroclipboard-container">
@@ -1406,9 +1447,9 @@ calculate_qc_metrics(adata: anndata._core.anndata.AnnData, *, expr_type: str = &
             </clipboard-copy>
         </div>
         <div class="CodeMirror cm-s-jupyter">
-            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">sample_3</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">read_10x_mtx</span><span class="p">(</span><span class="s1">&#39;../Data/cellranger/cellranger_sample3/outs/filtered_feature_bc_matrix/&#39;</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">sample_3</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">read_10x_mtx</span><span class="p">(</span><span class="s1">&#39;../../../../sandbox_scRNA_testAndFeedback/scRNASeq_course/Data/cellranger_sample3/outs/filtered_feature_bc_matrix/&#39;</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
-<div id="cell-4" class="clipboard-copy-txt">sample_3 = sc.read_10x_mtx('../Data/cellranger/cellranger_sample3/outs/filtered_feature_bc_matrix/', cache=True)</div>
+<div id="cell-4" class="clipboard-copy-txt">sample_3 = sc.read_10x_mtx('../../../../sandbox_scRNA_testAndFeedback/scRNASeq_course/Data/cellranger_sample3/outs/filtered_feature_bc_matrix/', cache=True)</div>
     
         </div>
     </div>
@@ -1444,11 +1485,11 @@ calculate_qc_metrics(adata: anndata._core.anndata.AnnData, *, expr_type: str = &
 <p>Each component of the annotated dataset is called by using a <code>dot</code>, For example, we can see the data matrix by</p>
 
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[4]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="zeroclipboard-container">
@@ -1472,30 +1513,6 @@ calculate_qc_metrics(adata: anndata._core.anndata.AnnData, *, expr_type: str = &
 </div>
 </div>
 
-<div class="jp-Cell-outputWrapper">
-
-
-<div class="jp-OutputArea jp-Cell-outputArea">
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[4]:</div>
-
-
-
-
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>&lt;8583x36601 sparse matrix of type &#39;&lt;class &#39;numpy.float32&#39;&gt;&#39;
-	with 22578947 stored elements in Compressed Sparse Row format&gt;</pre>
-</div>
-
-</div>
-
-</div>
-
-</div>
-
 </div>
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
@@ -1507,7 +1524,7 @@ calculate_qc_metrics(adata: anndata._core.anndata.AnnData, *, expr_type: str = &
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="zeroclipboard-container">
@@ -1532,11 +1549,11 @@ calculate_qc_metrics(adata: anndata._core.anndata.AnnData, *, expr_type: str = &
 </div>
 
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[6]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="zeroclipboard-container">
@@ -1560,41 +1577,12 @@ calculate_qc_metrics(adata: anndata._core.anndata.AnnData, *, expr_type: str = &
 </div>
 </div>
 
-<div class="jp-Cell-outputWrapper">
-
-
-<div class="jp-OutputArea jp-Cell-outputArea">
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
-
-
-
-
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>array([[0., 0., 0., ..., 0., 0., 0.],
-       [0., 0., 0., ..., 0., 1., 0.],
-       [0., 0., 0., ..., 0., 0., 0.],
-       ...,
-       [0., 0., 0., ..., 0., 0., 0.],
-       [0., 0., 0., ..., 0., 0., 0.],
-       [0., 0., 0., ..., 0., 0., 0.]], dtype=float32)</pre>
-</div>
-
-</div>
-
-</div>
-
-</div>
-
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[7]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="zeroclipboard-container">
@@ -1619,11 +1607,11 @@ calculate_qc_metrics(adata: anndata._core.anndata.AnnData, *, expr_type: str = &
 </div>
 
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[8]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="zeroclipboard-container">
@@ -1647,35 +1635,6 @@ calculate_qc_metrics(adata: anndata._core.anndata.AnnData, *, expr_type: str = &
 </div>
 </div>
 
-<div class="jp-Cell-outputWrapper">
-
-
-<div class="jp-OutputArea jp-Cell-outputArea">
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[8]:</div>
-
-
-
-
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>array([[0., 0., 0., ..., 0., 0., 0.],
-       [0., 0., 0., ..., 0., 0., 0.],
-       [0., 0., 0., ..., 0., 0., 0.],
-       ...,
-       [0., 0., 0., ..., 0., 0., 0.],
-       [0., 0., 0., ..., 0., 0., 0.],
-       [0., 0., 0., ..., 0., 0., 0.]], dtype=float32)</pre>
-</div>
-
-</div>
-
-</div>
-
-</div>
-
 </div>
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
@@ -1687,7 +1646,7 @@ calculate_qc_metrics(adata: anndata._core.anndata.AnnData, *, expr_type: str = &
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[9]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="zeroclipboard-container">
@@ -1725,11 +1684,11 @@ sc.pp.calculate_qc_metrics(sample_3, inplace=True)</div>
 </ul>
 
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[10]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="zeroclipboard-container">
@@ -1753,31 +1712,6 @@ sc.pp.calculate_qc_metrics(sample_3, inplace=True)</div>
 </div>
 </div>
 
-<div class="jp-Cell-outputWrapper">
-
-
-<div class="jp-OutputArea jp-Cell-outputArea">
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[10]:</div>
-
-
-
-
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>AnnData object with n_obs × n_vars = 8583 × 36601
-    obs: &#39;n_genes_by_counts&#39;, &#39;log1p_n_genes_by_counts&#39;, &#39;total_counts&#39;, &#39;log1p_total_counts&#39;, &#39;pct_counts_in_top_50_genes&#39;, &#39;pct_counts_in_top_100_genes&#39;, &#39;pct_counts_in_top_200_genes&#39;, &#39;pct_counts_in_top_500_genes&#39;
-    var: &#39;gene_ids&#39;, &#39;feature_types&#39;, &#39;n_cells_by_counts&#39;, &#39;mean_counts&#39;, &#39;log1p_mean_counts&#39;, &#39;pct_dropout_by_counts&#39;, &#39;total_counts&#39;, &#39;log1p_total_counts&#39;</pre>
-</div>
-
-</div>
-
-</div>
-
-</div>
-
 </div>
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
@@ -1785,11 +1719,11 @@ sc.pp.calculate_qc_metrics(sample_3, inplace=True)</div>
 <p>You can access directly all observations/variables or some of them specifically. Each observation line is named with the cell barcode, while variables have gene names in each line</p>
 
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[11]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="zeroclipboard-container">
@@ -1813,187 +1747,12 @@ sc.pp.calculate_qc_metrics(sample_3, inplace=True)</div>
 </div>
 </div>
 
-<div class="jp-Cell-outputWrapper">
-
-
-<div class="jp-OutputArea jp-Cell-outputArea">
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[11]:</div>
-
-
-
-<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>n_genes_by_counts</th>
-      <th>log1p_n_genes_by_counts</th>
-      <th>total_counts</th>
-      <th>log1p_total_counts</th>
-      <th>pct_counts_in_top_50_genes</th>
-      <th>pct_counts_in_top_100_genes</th>
-      <th>pct_counts_in_top_200_genes</th>
-      <th>pct_counts_in_top_500_genes</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>AAACCTGAGATCCTGT-1</th>
-      <td>473</td>
-      <td>6.161207</td>
-      <td>694.0</td>
-      <td>6.543912</td>
-      <td>32.853026</td>
-      <td>46.253602</td>
-      <td>60.662824</td>
-      <td>100.000000</td>
-    </tr>
-    <tr>
-      <th>AAACCTGAGCCTATGT-1</th>
-      <td>2016</td>
-      <td>7.609367</td>
-      <td>6868.0</td>
-      <td>8.834774</td>
-      <td>47.408270</td>
-      <td>53.567268</td>
-      <td>61.560862</td>
-      <td>74.635993</td>
-    </tr>
-    <tr>
-      <th>AAACCTGAGCTTTGGT-1</th>
-      <td>3670</td>
-      <td>8.208219</td>
-      <td>9188.0</td>
-      <td>9.125762</td>
-      <td>17.599042</td>
-      <td>25.555072</td>
-      <td>35.154549</td>
-      <td>51.273400</td>
-    </tr>
-    <tr>
-      <th>AAACCTGAGGATGGTC-1</th>
-      <td>2175</td>
-      <td>7.685244</td>
-      <td>4021.0</td>
-      <td>8.299535</td>
-      <td>13.603581</td>
-      <td>21.139020</td>
-      <td>32.131311</td>
-      <td>51.927381</td>
-    </tr>
-    <tr>
-      <th>AAACCTGAGTACGACG-1</th>
-      <td>1622</td>
-      <td>7.392032</td>
-      <td>3237.0</td>
-      <td>8.082711</td>
-      <td>20.883534</td>
-      <td>30.552981</td>
-      <td>42.570281</td>
-      <td>63.608279</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>TTTGTCATCACGACTA-1</th>
-      <td>3234</td>
-      <td>8.081784</td>
-      <td>6918.0</td>
-      <td>8.842027</td>
-      <td>13.356461</td>
-      <td>20.381613</td>
-      <td>29.719572</td>
-      <td>46.863255</td>
-    </tr>
-    <tr>
-      <th>TTTGTCATCAGTTTGG-1</th>
-      <td>1312</td>
-      <td>7.180070</td>
-      <td>2895.0</td>
-      <td>7.971086</td>
-      <td>32.918826</td>
-      <td>44.006908</td>
-      <td>55.613126</td>
-      <td>71.951641</td>
-    </tr>
-    <tr>
-      <th>TTTGTCATCCAAACTG-1</th>
-      <td>1009</td>
-      <td>6.917706</td>
-      <td>1461.0</td>
-      <td>7.287560</td>
-      <td>20.123203</td>
-      <td>29.295003</td>
-      <td>42.984257</td>
-      <td>65.160849</td>
-    </tr>
-    <tr>
-      <th>TTTGTCATCCGTCAAA-1</th>
-      <td>1399</td>
-      <td>7.244228</td>
-      <td>2712.0</td>
-      <td>7.905810</td>
-      <td>28.945428</td>
-      <td>40.007375</td>
-      <td>50.884956</td>
-      <td>66.851032</td>
-    </tr>
-    <tr>
-      <th>TTTGTCATCGTTACAG-1</th>
-      <td>3294</td>
-      <td>8.100161</td>
-      <td>7757.0</td>
-      <td>8.956480</td>
-      <td>25.125693</td>
-      <td>33.518113</td>
-      <td>42.671136</td>
-      <td>56.323321</td>
-    </tr>
-  </tbody>
-</table>
-<p>8583 rows × 8 columns</p>
 </div>
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[12]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="zeroclipboard-container">
@@ -2017,115 +1776,12 @@ sc.pp.calculate_qc_metrics(sample_3, inplace=True)</div>
 </div>
 </div>
 
-<div class="jp-Cell-outputWrapper">
-
-
-<div class="jp-OutputArea jp-Cell-outputArea">
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[12]:</div>
-
-
-
-<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>total_counts</th>
-      <th>n_genes_by_counts</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>AAACCTGAGATCCTGT-1</th>
-      <td>694.0</td>
-      <td>473</td>
-    </tr>
-    <tr>
-      <th>AAACCTGAGCCTATGT-1</th>
-      <td>6868.0</td>
-      <td>2016</td>
-    </tr>
-    <tr>
-      <th>AAACCTGAGCTTTGGT-1</th>
-      <td>9188.0</td>
-      <td>3670</td>
-    </tr>
-    <tr>
-      <th>AAACCTGAGGATGGTC-1</th>
-      <td>4021.0</td>
-      <td>2175</td>
-    </tr>
-    <tr>
-      <th>AAACCTGAGTACGACG-1</th>
-      <td>3237.0</td>
-      <td>1622</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>TTTGTCATCACGACTA-1</th>
-      <td>6918.0</td>
-      <td>3234</td>
-    </tr>
-    <tr>
-      <th>TTTGTCATCAGTTTGG-1</th>
-      <td>2895.0</td>
-      <td>1312</td>
-    </tr>
-    <tr>
-      <th>TTTGTCATCCAAACTG-1</th>
-      <td>1461.0</td>
-      <td>1009</td>
-    </tr>
-    <tr>
-      <th>TTTGTCATCCGTCAAA-1</th>
-      <td>2712.0</td>
-      <td>1399</td>
-    </tr>
-    <tr>
-      <th>TTTGTCATCGTTACAG-1</th>
-      <td>7757.0</td>
-      <td>3294</td>
-    </tr>
-  </tbody>
-</table>
-<p>8583 rows × 2 columns</p>
 </div>
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[13]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="zeroclipboard-container">
@@ -2149,181 +1805,6 @@ sc.pp.calculate_qc_metrics(sample_3, inplace=True)</div>
 </div>
 </div>
 
-<div class="jp-Cell-outputWrapper">
-
-
-<div class="jp-OutputArea jp-Cell-outputArea">
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[13]:</div>
-
-
-
-<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>gene_ids</th>
-      <th>feature_types</th>
-      <th>n_cells_by_counts</th>
-      <th>mean_counts</th>
-      <th>log1p_mean_counts</th>
-      <th>pct_dropout_by_counts</th>
-      <th>total_counts</th>
-      <th>log1p_total_counts</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>MIR1302-2HG</th>
-      <td>ENSG00000243485</td>
-      <td>Gene Expression</td>
-      <td>13</td>
-      <td>0.001515</td>
-      <td>0.001513</td>
-      <td>99.848538</td>
-      <td>13.0</td>
-      <td>2.639057</td>
-    </tr>
-    <tr>
-      <th>FAM138A</th>
-      <td>ENSG00000237613</td>
-      <td>Gene Expression</td>
-      <td>0</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>100.000000</td>
-      <td>0.0</td>
-      <td>0.000000</td>
-    </tr>
-    <tr>
-      <th>OR4F5</th>
-      <td>ENSG00000186092</td>
-      <td>Gene Expression</td>
-      <td>0</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>100.000000</td>
-      <td>0.0</td>
-      <td>0.000000</td>
-    </tr>
-    <tr>
-      <th>AL627309.1</th>
-      <td>ENSG00000238009</td>
-      <td>Gene Expression</td>
-      <td>40</td>
-      <td>0.004777</td>
-      <td>0.004766</td>
-      <td>99.533962</td>
-      <td>41.0</td>
-      <td>3.737670</td>
-    </tr>
-    <tr>
-      <th>AL627309.3</th>
-      <td>ENSG00000239945</td>
-      <td>Gene Expression</td>
-      <td>0</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>100.000000</td>
-      <td>0.0</td>
-      <td>0.000000</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>AC141272.1</th>
-      <td>ENSG00000277836</td>
-      <td>Gene Expression</td>
-      <td>0</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>100.000000</td>
-      <td>0.0</td>
-      <td>0.000000</td>
-    </tr>
-    <tr>
-      <th>AC023491.2</th>
-      <td>ENSG00000278633</td>
-      <td>Gene Expression</td>
-      <td>587</td>
-      <td>0.249680</td>
-      <td>0.222887</td>
-      <td>93.160899</td>
-      <td>2143.0</td>
-      <td>7.670429</td>
-    </tr>
-    <tr>
-      <th>AC007325.1</th>
-      <td>ENSG00000276017</td>
-      <td>Gene Expression</td>
-      <td>212</td>
-      <td>0.040196</td>
-      <td>0.039409</td>
-      <td>97.530001</td>
-      <td>345.0</td>
-      <td>5.846439</td>
-    </tr>
-    <tr>
-      <th>AC007325.4</th>
-      <td>ENSG00000278817</td>
-      <td>Gene Expression</td>
-      <td>1949</td>
-      <td>0.436910</td>
-      <td>0.362495</td>
-      <td>77.292322</td>
-      <td>3750.0</td>
-      <td>8.229777</td>
-    </tr>
-    <tr>
-      <th>AC007325.2</th>
-      <td>ENSG00000277196</td>
-      <td>Gene Expression</td>
-      <td>2</td>
-      <td>0.000233</td>
-      <td>0.000233</td>
-      <td>99.976698</td>
-      <td>2.0</td>
-      <td>1.098612</td>
-    </tr>
-  </tbody>
-</table>
-<p>36601 rows × 8 columns</p>
-</div>
-</div>
-
-</div>
-
-</div>
-
-</div>
-
 </div>
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
@@ -2335,7 +1816,7 @@ sc.pp.calculate_qc_metrics(sample_3, inplace=True)</div>
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[14]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="zeroclipboard-container">
@@ -2364,7 +1845,7 @@ sc.pp.calculate_qc_metrics(sample_3, inplace=True)</div>
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[15]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="zeroclipboard-container">
@@ -2395,11 +1876,11 @@ sc.pp.calculate_qc_metrics(sample_3, inplace=True)</div>
 <p>We can see that the matrix is stored in <code>.layers['umi_raw']</code>, and we can reassign it to <code>.X</code> or use it if needed in some future analysis</p>
 
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[17]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="zeroclipboard-container">
@@ -2423,38 +1904,12 @@ sc.pp.calculate_qc_metrics(sample_3, inplace=True)</div>
 </div>
 </div>
 
-<div class="jp-Cell-outputWrapper">
-
-
-<div class="jp-OutputArea jp-Cell-outputArea">
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[17]:</div>
-
-
-
-
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>AnnData object with n_obs × n_vars = 8583 × 36601
-    obs: &#39;n_genes_by_counts&#39;, &#39;log1p_n_genes_by_counts&#39;, &#39;total_counts&#39;, &#39;log1p_total_counts&#39;, &#39;pct_counts_in_top_50_genes&#39;, &#39;pct_counts_in_top_100_genes&#39;, &#39;pct_counts_in_top_200_genes&#39;, &#39;pct_counts_in_top_500_genes&#39;
-    var: &#39;gene_ids&#39;, &#39;feature_types&#39;, &#39;n_cells_by_counts&#39;, &#39;mean_counts&#39;, &#39;log1p_mean_counts&#39;, &#39;pct_dropout_by_counts&#39;, &#39;total_counts&#39;, &#39;log1p_total_counts&#39;
-    layers: &#39;umi_raw&#39;</pre>
 </div>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[18]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="zeroclipboard-container">
@@ -2478,35 +1933,6 @@ sc.pp.calculate_qc_metrics(sample_3, inplace=True)</div>
 </div>
 </div>
 
-<div class="jp-Cell-outputWrapper">
-
-
-<div class="jp-OutputArea jp-Cell-outputArea">
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[18]:</div>
-
-
-
-
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>array([[0., 0., 0., ..., 0., 0., 0.],
-       [0., 0., 0., ..., 0., 1., 0.],
-       [0., 0., 0., ..., 0., 0., 0.],
-       ...,
-       [0., 0., 0., ..., 0., 0., 0.],
-       [0., 0., 0., ..., 0., 0., 0.],
-       [0., 0., 0., ..., 0., 0., 0.]], dtype=float32)</pre>
-</div>
-
-</div>
-
-</div>
-
-</div>
-
 </div>
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
@@ -2524,7 +1950,7 @@ sc.pp.calculate_qc_metrics(sample_3, inplace=True)</div>
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[22]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="zeroclipboard-container">
@@ -2549,11 +1975,11 @@ sc.pp.calculate_qc_metrics(sample_3, inplace=True)</div>
 </div>
 
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[23]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="zeroclipboard-container">
@@ -2577,32 +2003,6 @@ sc.pp.calculate_qc_metrics(sample_3, inplace=True)</div>
 </div>
 </div>
 
-<div class="jp-Cell-outputWrapper">
-
-
-<div class="jp-OutputArea jp-Cell-outputArea">
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[23]:</div>
-
-
-
-
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>AnnData object with n_obs × n_vars = 5452 × 36601
-    obs: &#39;n_genes_by_counts&#39;, &#39;log1p_n_genes_by_counts&#39;, &#39;total_counts&#39;, &#39;log1p_total_counts&#39;, &#39;pct_counts_in_top_50_genes&#39;, &#39;pct_counts_in_top_100_genes&#39;, &#39;pct_counts_in_top_200_genes&#39;, &#39;pct_counts_in_top_500_genes&#39;
-    var: &#39;gene_ids&#39;, &#39;feature_types&#39;, &#39;n_cells_by_counts&#39;, &#39;mean_counts&#39;, &#39;log1p_mean_counts&#39;, &#39;pct_dropout_by_counts&#39;, &#39;total_counts&#39;, &#39;log1p_total_counts&#39;
-    layers: &#39;umi_raw&#39;</pre>
-</div>
-
-</div>
-
-</div>
-
-</div>
-
 </div>
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
@@ -2614,7 +2014,7 @@ sc.pp.calculate_qc_metrics(sample_3, inplace=True)</div>
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[24]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="zeroclipboard-container">
@@ -2639,11 +2039,11 @@ sc.pp.calculate_qc_metrics(sample_3, inplace=True)</div>
 </div>
 
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[25]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="zeroclipboard-container">
@@ -2665,32 +2065,6 @@ sc.pp.calculate_qc_metrics(sample_3, inplace=True)</div>
     </div>
 
 </div>
-</div>
-
-<div class="jp-Cell-outputWrapper">
-
-
-<div class="jp-OutputArea jp-Cell-outputArea">
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[25]:</div>
-
-
-
-
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>AnnData object with n_obs × n_vars = 8583 × 28220
-    obs: &#39;n_genes_by_counts&#39;, &#39;log1p_n_genes_by_counts&#39;, &#39;total_counts&#39;, &#39;log1p_total_counts&#39;, &#39;pct_counts_in_top_50_genes&#39;, &#39;pct_counts_in_top_100_genes&#39;, &#39;pct_counts_in_top_200_genes&#39;, &#39;pct_counts_in_top_500_genes&#39;
-    var: &#39;gene_ids&#39;, &#39;feature_types&#39;, &#39;n_cells_by_counts&#39;, &#39;mean_counts&#39;, &#39;log1p_mean_counts&#39;, &#39;pct_dropout_by_counts&#39;, &#39;total_counts&#39;, &#39;log1p_total_counts&#39;
-    layers: &#39;umi_raw&#39;</pre>
-</div>
-
-</div>
-
-</div>
-
 </div>
 
 </div>
@@ -2719,7 +2093,7 @@ sc.pp.calculate_qc_metrics(sample_3, inplace=True)</div>
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[37]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="zeroclipboard-container">
@@ -2733,9 +2107,9 @@ sc.pp.calculate_qc_metrics(sample_3, inplace=True)</div>
             </clipboard-copy>
         </div>
         <div class="CodeMirror cm-s-jupyter">
-            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">sample_2</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;../Data/notebooks_data/sample_2.h5ad&#39;</span><span class="p">)</span>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="err">!</span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="o">../../</span><span class="n">Data</span><span class="o">/</span><span class="n">notebooks_data</span>
 </pre></div>
-<div id="cell-23" class="clipboard-copy-txt">sample_2.write('../Data/notebooks_data/sample_2.h5ad')</div>
+<div id="cell-23" class="clipboard-copy-txt">!mkdir -p ../../Data/notebooks_data</div>
     
         </div>
     </div>
@@ -2744,11 +2118,11 @@ sc.pp.calculate_qc_metrics(sample_3, inplace=True)</div>
 </div>
 
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[38]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="zeroclipboard-container">
@@ -2762,9 +2136,9 @@ sc.pp.calculate_qc_metrics(sample_3, inplace=True)</div>
             </clipboard-copy>
         </div>
         <div class="CodeMirror cm-s-jupyter">
-            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">sample_3</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;../Data/notebooks_data/sample_3.h5ad&#39;</span><span class="p">)</span>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">sample_2</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;../../Data/notebooks_data/sample_2.h5ad&#39;</span><span class="p">)</span>
 </pre></div>
-<div id="cell-24" class="clipboard-copy-txt">sample_3.write('../Data/notebooks_data/sample_3.h5ad')</div>
+<div id="cell-24" class="clipboard-copy-txt">sample_2.write('../../Data/notebooks_data/sample_2.h5ad')</div>
     
         </div>
     </div>
@@ -2772,25 +2146,33 @@ sc.pp.calculate_qc_metrics(sample_3, inplace=True)</div>
 </div>
 </div>
 
-<div class="jp-Cell-outputWrapper">
-
-
-<div class="jp-OutputArea jp-Cell-outputArea">
-
-<div class="jp-OutputArea-child">
-
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-25">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+        <div class="CodeMirror cm-s-jupyter">
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">sample_3</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;../../Data/notebooks_data/sample_3.h5ad&#39;</span><span class="p">)</span>
+</pre></div>
+<div id="cell-25" class="clipboard-copy-txt">sample_3.write('../../Data/notebooks_data/sample_3.h5ad')</div>
     
-    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-
-
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr">
-<pre>... storing &#39;feature_types&#39; as categorical
-</pre>
-</div>
-</div>
+        </div>
+    </div>
 
 </div>
-
 </div>
 
 </div>
@@ -2811,7 +2193,7 @@ sc.pp.calculate_qc_metrics(sample_3, inplace=True)</div>
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
         
-        <a href="../.." class="md-footer__link md-footer__link--prev" aria-label="Previous: Course Introduction" rel="prev">
+        <a href="../installation/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Setup and installation" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
           </div>
@@ -2820,7 +2202,7 @@ sc.pp.calculate_qc_metrics(sample_3, inplace=True)</div>
               <span class="md-footer__direction">
                 Previous
               </span>
-              Course Introduction
+              Setup and installation
             </div>
           </div>
         </a>
@@ -2867,6 +2249,8 @@ sc.pp.calculate_qc_metrics(sample_3, inplace=True)</div>
     
     
       <script src="../../assets/javascripts/bundle.e1a181d9.min.js"></script>
+      
+        <script src="../../javascripts/embed-amd.js"></script>
       
     
   </body>
