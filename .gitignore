@@ -41,4 +41,10 @@ vignettes/*.pdf
 # Other
 .gitignore
 *.DS_Store
-Data/*
+Data/
+Notebooks/Python/*.log
+Notebooks/Python/.ipynb_checkpoints
+Notebooks/Python/cache
+/.ipynb_checkpoints
+Environments/Python/.ipynb_checkpoints
+Notebooks/Python/Extra/.ipynb_checkpoints
