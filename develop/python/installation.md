@@ -1,43 +1,33 @@
 # Setup for coding
 
-## On Ucloud
+In what follows you have the setup guide for the possible hardware where you are running the course material.
 
-Access to [Ucloud](cloud.sdu.dk) with your account and access to your own project, or a project you have been invited to.
-Look for the `Jupyter` app, and choose the most recent version to run. 
+## For Ucloud users
 
-Open your terminal and download the repository for this course:
+Access to [Ucloud](https://cloud.sdu.dk) with your account and choose the project `Health data science sandbox` where you have been invited.
 
-`git clone https://github.com/hds-sandbox/scRNASeq_course.git`
+![](./img/chooseProject.png)
 
-Download the datasets into the data folder (a few GigaBytes each)
+Click on `Apps` on the left-side menu, and look for the application `JupyterLab`.
 
-```
-mkdir -p scRNAseq_course/Data/notebooks_data
+![](./img/choosejupyter.png)
 
-cd scRNAseq_course/Data/notebooks_data
+Once the app is chosen, click on `Run application` on the right-hand side of the screen. You will be met with a series of possible parameters to choose. You have to assign:
 
-wget https://aarhusuniversitet-my.sharepoint.com/:u:/g/personal/au612681_uni_au_dk/Ef-p9YNvrrZJp0s5gqRJ02YBg19brRA0o6JQ49S3MR-lYA?email=jose.romero%40sund.ku.dk&e=o5MuQw
+- job name: simply any name given to the app execution
+- hours: how long you are using the app. You can choose as many hours as the course session lasts. Or just a couple of hours to do some exercises. You can always add extra time while using the app, or run it again with the same settings (they will be saved under the name you chose as `job name`)
+- Machine type: it is sufficient to choose a machine with 8 vCPUs or 16 vCPUs. The notebooks number three and six are however quite heavy, and we suggest to use 16 or 32 vCPUs for those.
+- Dependencies: commands that will run automatically when starting the app. Choose the same file as in the picture (`projects/sandbox_scRNA_testAndFeedback/scRNAseq_course/Environments/Python/Ucloud_conda.sh`), it will get all the packages up and running.
+- Select folders to use: makes specific folders usable by the app. Choose the same folder as in the picture (`projects/sandbox_scRNA_testAndFeedback`), it contains the data.
 
-wget https://aarhusuniversitet-my.sharepoint.com/:u:/g/personal/au612681_uni_au_dk/Ecvn2TQ_BfVIlAFB4QLvJrEBaBGx1Rqcr_itY0U8jlS2gg?email=jose.romero%40sund.ku.dk&e=RhJTDL
+![](./img/chooseparam.png)
 
-wget https://aarhusuniversitet-my.sharepoint.com/:u:/g/personal/au612681_uni_au_dk/EcfQhugmdARDrp-3QVOXFXABEc1EdrGBZ3dkeuit9vvrsw?email=jose.romero%40sund.ku.dk&e=tSYM5U
-```
+You are ready to run the app by clicking on the button on the right column of the screen (`submit`). Now, wait some time until the screen will look like in the figure below. It usually takes a few minutes for everything to be ready and installed. You can always come back to this screen from the left menu `Runs` on ucloud, so that you can add extra time or stop the app if you will not use it.
 
-Now, install the required packages by creating a conda environment:
+![](./img/startapp.png)
 
-```
-cd ../../Environments/Python
-conda env create --file scrna_twodays.yml
-```
+Now, click on `open interface` on the top right-hand side of the screen. You will start jupyter lab through your browser! On the left side of jupyter lab, where you see the file explorer, make a right click and create a folder with your name, and open it. Then, click on the `version control` button (the squared button on the very left of the screen). You will get a message: choose `Clone a repository`, and insert the following link: `https://github.com/hds-sandbox/scRNASeq_course.git`.
 
-Activate you conda environment by
+![](./img/createrepo.png)
 
-```
-conda activate scrna_test_environment
-```
-
-Finally, install a couple of remaining packages
-
-```
-Rscript R_install.R
-```
+Now, open the folder scRNAseq_course. You will find the python notebooks in the folder `Notebooks/Python`. They will match the notebooks illustrated as guide in this webpage. You can read each notebook here before you run it in jupyterlab. Every time you open a notebook, go on the menu `kernel --> change kernel`, and choose `Python (scRNA)`.
