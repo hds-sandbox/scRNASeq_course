@@ -1,0 +1,245 @@
+---
+title: "Quality Control (QC) and filtering"
+author: "Jose Alejandro Romero Herrera"
+date: '`r Sys.Date()`'
+knit: (function(inputFile, encoding) { 
+      rmarkdown::render(inputFile,
+                        encoding=encoding,
+                        output_format='all',
+                        output_dir='./')})
+output:
+  # To create PDF report, uncomment below
+  #pdf_document:
+  #  toc: yes
+  md_document:
+    variat: markdown_github
+    df_print: kable
+    dev: png
+---
+
+```{r knitr, include = FALSE}
+DOCNAME = knitr::current_input()
+DOCNAME = gsub(DOCNAME, pattern = ".Rmd", replacement = "")
+knitr::opts_chunk$set(autodep        = TRUE,
+                      cache          = FALSE,
+                      cache.path     = paste0("cache/", DOCNAME, "/"),
+                      cache.comments = TRUE,
+                      echo           = TRUE,
+                      error          = FALSE,
+                      fig.align      = "center",
+                      fig.path       = paste0("./img/", DOCNAME, "/"),
+                      fig.width      = 8,
+                      fig.height     = 5,
+                      message        = FALSE,
+                      warning        = FALSE)
+```
+
+***
+
+**Motivation:**
+
+Quality control and filtering is the most important steps of single cell data analysis. Allowing low quality cells into your analysis will compromise/mislead your conclusions by adding hundreds of meaningless data points to your workflow.
+The main sources of low quality cells are:
+- broken cells for which some of their transcripts get lost
+- cells isolated together with too much ambient RNA
+- missing cell during isolation (e.g. empty droplet in microfluidic machines)
+- multiple cells isolated together (multiplets, usually only two cells - doublets)
+
+
+***
+
+**Learning objectives:**
+
+- Understand and discuss QC issues and measures from single cell data
+- Explore QC graphs and set filtering tools and thresholds
+- Analyze the results of QC filters and evaluate necessity for different filtering 
+
+*** 
+
+**Execution time: 40 minutes**
+
+## QC and selecting cells for further analysis
+Seurat allows you to easily explore QC metrics and filter cells based on any user-defined criteria. A few QC metrics [commonly used](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4758103/) by the community include:
+
+* The number of unique genes detected in each cell. 
+    + Low-quality cells or empty droplets will often have very few genes
+    + Cell doublets or multiplets may exhibit an aberrantly high gene count
+    
+* Similarly, the total number of molecules detected within a cell (correlates strongly with unique genes)
+
+* The percentage of reads that map to the mitochondrial genome
+    + Low-quality / dying cells often exhibit extensive mitochondrial contamination
+
+The number of unique genes and total molecules are automatically calculated during `CreateSeuratObject()`. However, we calculate mitochondrial QC metrics ourselves, since we need an identifier for mitochondrial genes, and there is not a standard one. In our case, we can use the `PercentageFeatureSet()` function, which calculates the percentage of counts originating from a set of features, using all genes starting with `MT-` as a set of mitochondrial genes
+
+```{r mito, fig.height=7, fig.width=13}
+# The [[ operator can add columns to object metadata. This is a great place to stash QC stats
+sample_3[["percent.mt"]] <- PercentageFeatureSet(sample_3, pattern = "^MT-")
+```
+
+<details>
+  <summary>**Where are QC metrics stored in Seurat?**</summary>
+  Cell QC metrics are stored in the @meta.data slot of a Seurat Object
+  
+```{r}
+head(sample_3@meta.data, 5)
+```
+
+</details>
+
+
+## Visualize and evaluate quality measures
+
+## Violin plots
+We can make use of violin plots to show the distribution of values for different metrics in our data. This is done using the `VlnPlot()` function. The function can take several metrics all together and produce a combined plot with our metrics of interest:
+
+```{r qc_before, fig.height=7, fig.width=13}
+VlnPlot(sample_3, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+```
+
+Here we simply look at the distribution of transcripts per cells, detected genes per cell and mithocondrial %. Note how the distribution is bimodal. This usually denotes a cluster of low-quality cells and viable cells. Sometimes filtering out the data points on the bottom-most sides of those graphs removes a lot of cells from a dataset, but this is quite a normal thing, and there is no need to be worried about it. The top side of the distributions show a tail with few cells having a lot of transcripts and genes. It is also good to filter out some of those extreme values - for technical reasons, it will also help in having a better normalization of the data later on.
+
+In this dataset there are few cell with a high percentage of mitocondrial content. Those are precisely 245 if we set 0.1 (that is 10%) as a threshold. A value between 10% and 20% is the usual standard when filtering single cell datasets.
+
+***
+
+We can do some plots to have a look at quality measures combined together.
+
+### Counts vs Genes
+This is a typical plot, where you look at the total transcripts per cells (x axis) and detected genes per cell (y axis). Usually, those two measures grow together. Points with a lot of transcripts and genes might be **multiplets** (multiple cells sequenced together as one), while very few transcripts and genes denote the presence of only ambient RNA or **very low quality sequencing** of a cell.
+
+In order to create this plot, we make use of the `FeatureScatter()` function:
+    
+```{r qc_before2, fig.height=7, fig.width=13}
+# FeatureScatter is typically used to visualize feature-feature relationships, but can be used for anything calculated by the object, i.e. columns in object metadata, PC scores etc.
+
+FeatureScatter(sample_3, feature1 = "nCount_RNA", feature2 = "nFeature_RNA") 
+```
+
+<details>
+  <summary>**How to color dots with a continuous variable?**</summary>
+  Unfortunately, Seurat does not support yet that functionality. We will need to use the function `FetchData()` (works with gene expression values as well) or select the @meta.data object. Then, we can create a custom plot with ggplot2.
+  
+```{r qc_before_colored}
+data <- FetchData(sample_3, vars = c("nCount_RNA", "nFeature_RNA", "percent.mt"))
+data <- sample_3@meta.data
+
+data %>% ggplot(aes(x = nCount_RNA, y = nFeature_RNA, color = percent.mt)) + geom_point() + scale_color_viridis_c()
+```
+
+</details>
+
+***
+
+## Filtering cells and choosing thresholds
+
+**Mitocondrial content**: In this dataset there are few cells with a high percentage of mitocondrial content. Those are precisely 245 if we set 10% as a threshold. A value between 10% and 20% is the usual standard when filtering single cell datasets.
+
+In addition, we will filter cells that are in both extremes of the distributions for **number of detected genes** and **number of total transcripts per cell**. This this case, it seems reasonable to exclude:
+
+* Cells that have unique counts over 30000 or less than 5000
+* Cells that have unique detected genes over 6000 or below 2000.
+
+Once we have chosen our thresholds, we can filter our dataset using the `subset()` function. The argument `subset` allows us to create a filtering parameter using our QC metrics.
+
+```{r}
+MIN_COUNTS = 5000  #minimum number of transcripts per cell
+MAX_COUNTS = 30000 #maximum number of transcripts per cell
+MIN_GENES = 2000   #minimum number of genes per cell
+MAX_GENES = 6000   #maximum number of genes per cell
+MAX_MITO = 10      #mitocondrial percentage treshold)
+
+sample_3 <- subset(sample_3, subset = nFeature_RNA > MIN_GENES & nFeature_RNA < MAX_GENES &
+                     nCounts_RNA > MIN_COUNTS & nCounts_RNA < MAX_COUNTS &
+                     percent.mt < 10)
+```
+
+***
+
+We can now recheck our QC plots:
+```{r qc_after, fig.height=7, fig.width=13}
+VlnPlot(sample_3, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+FeatureScatter(sample_3, feature1 = "nCount_RNA", feature2 = "nFeature_RNA") 
+```
+
+
+## Doublet filtering
+Another important step consists in filtering out multiplets. Those are in the almost totality of the cases doublets, because triplets and above multiplets are extremely rare. Read [this more technical blog post](https://liorpachter.wordpress.com/2019/02/07/sub-poisson-loading-for-single-cell-rna-seq/) for more explanations about this.
+
+The external tool `scrublet` simulates doublets by putting together the transcripts of random pairs of cells from the dataset. Then, it assigns a score to each cell in the data, based on the similarity with the simulated doublets. An `expected_doublet_rate` of 0.06 (6%) is quite a typical value for single cell data, but if you have a better estimate from laboratory work, microscope imaging or a specific protocol/sequencing machine, you can also tweak the value. 
+
+```{r}
+sample_3 <- scrublet_R(pbmc3k, python_home = "/opt/miniconda3/bin/python")
+```
+
+It seems that the doublet rate is likely to be lower than 6%, meaning that in this regard the data has been produced pretty well. We now plot the doublet scores assigned to each cell by the algorithm. We can see that most cells have a low score (the score is a value between 0 and 1). Datasets with many doublets show a more bimodal distribution, while here we just have a light tail beyond 0.1. 
+
+```{r}
+VlnPlot(sample_3, features = "doublet_score")
+```
+
+We can choose 0.1 as filtering treshold for the few detected doublets or alternatively use the automatic selection of doublets by the algorithm. We will choose the last option and use the automatically chosen doublets.
+
+```{r}
+sample_3 <- subset(sample_3, subset = doublet_score == FALSE)
+```
+
+## Filtering evaluation
+A quite basic but easy way to look at the results of our filtering is to normalize and plot the dataset on some projections. We will see these steps in the next lessons with more detail, but just to be able to follow up, we use a standard normalization technique:
+
+- **TPM normalization**: the transcripts of each cell are normalized, so that their total amounts to the same value in each cell. This should make cells more comparable independently of how many transcripts has been retained during cell isolation.
+- **Logarithmization**: the logarithm of the normalized transcripts is calculated. This reduce the variability of transcripts values and highlights variations due to biological factors.
+- **Scaling**: Each gene is scaled across all cells. This is useful, for example, for projecting the data onto a PCA. 
+
+TPM normalization and its logarithm are done within a single step, using the `NormalizeData()` function, while scaling is done using the `ScaleData()` function: 
+
+```{r}
+sample_3 <- NormalizeData(sample_3, normalization.method = "LogNormalize")
+sample_3 <- ScaleData(sample_3)
+```
+
+Then, in order to reduce computational times, we select the *most variable genes (MVG)* to perform PCA and visualization. MVG are calculated based on the LogNormalized reads. We will select the top 2000 MVGs
+
+```{r}
+sample_3 <- FindVariableFeatures(sample_3, nfeatures = 2000)
+```
+
+Now we perform PCA. We select our calculated variable genes using the `VariableFeatures()` function, and visualize the PCA projection with the `FeaturePlot()` function. We can color the dots using one of our QC metrics using the `features` parameter:
+
+```{r}
+sample_3 <- RunPCA(sample_3, features = VariableFeatures(object = sample_3))
+FeaturePlot(sample_3, reduction = 'pca', features = "nCount_RNA")
+```
+
+We can already see how the PCA has a clear structure with only a few dots sparsed around. It seems the filtering gave a good result. 
+
+Next, we need to select how many Principal Components we should use for visualizing the data using UMAP. We plot the variance ratio to see how each component of the PCA changes in variability using the Elbow method. The explained variance of each component can be plot using the function `ElbowPlot()`:
+
+```{r}
+ElbowPlot(sample_3)
+```
+
+We can choose a threshold to be used in all algorithms that use PCA to calculate any quantity. for example, we can select 15 PCA components, since the amount of variability explained dramatically drops after 10 PCs, more or less.
+
+Finally, We project the data using the UMAP algorithm. This is very good in preserving the structure of a dataset in low dimension, if any is present. We first calculate the neighbors of each cell (that is, its most similar cells), those are then used for the UMAP. The neighbors are calculated using the PCA matrix instead of the full data matrix, so we can choose the number of PCA components to use. Many algorithms work on the PCA, so you will see the parameter used again in other places.
+
+```{r}
+sample_3 <- RunUMAP(sample_3, dims = 1:10)
+FeaturePlot(sample_3, reduction = "umap", features = "nCount_RNA")
+```
+
+The UMAP plot gives a pretty well-structured output for this dataset. We will keep working further with this filtering. 
+
+```{r}
+SaveH5Seurat(sample_3, filename = "../../Data/notebooks_data/sample_3.filt.h5Seurat")
+```
+
+## Wrapping up
+
+We have succesfully gone through the filtering of a single cell dataset with good results that can be used further in the data analysis. In the next notebook `Normalize and Integrate`, we will integrate this dataset (testis cells from a healthy adult man) with the same type of sample from another man. Filtring of the other dataset is in the notebook `Part02_filtering_sample3.ipynb`. **Run the notebook to generate the filtered dataset**. The procedure follows tightly what happens for the dataset we just filtered.
+
+***
+
+**Optional:** 
+
+As you could see, this dataset seemed pretty ok to handle. Another dataset of much lower quality is present, and is not going to be integrated in the coming data analysis. Its preprocessing is shown as the submenu `Filtering a low quality sample` in the section `Extra` of the course webpage. In it we will also show an aggressive filtering done using a combination of PCA technique and automatic outliers detection.
