@@ -24,7 +24,10 @@ extra_javascript:
   - javascripts/embed-amd.js
 theme: 
     name: material
-    #logo: 'img/logo.png'
+    logo: 'img/favicon.ico'
+    palette:
+      primary: grey
+      accent: cyan
 markdown_extensions:
   - pymdownx.tabbed
   - pymdownx.superfences
@@ -35,3 +38,6 @@ markdown_extensions:
       generic: true
   - pymdownx.tasklist:
       custom_checkbox: true
+
+extra:
+  homepage: https://hds-sandbox.github.io/

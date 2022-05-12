@@ -34,9 +34,14 @@ knitr::opts_chunk$set(autodep        = TRUE,
                       warning        = FALSE)
 ```
 
+**Motivation**
+We will use `Seurat` as the main tool for the analysis, where we will also apply some other packages. Seurat has a comprehensive [manual webpage](https://satijalab.org/seurat/) that includes many different tutorials you can use for further practicing. Needed packages for this workshop are loaded with the function `library()`, which will make the tools available for us.
+
+An alternative and well-established tool for `R` users is [scanpy](https://scanpy.readthedocs.io/en/stable/). This is used in the `python` version of this course.
+
 ***
 
-## Learning objectives:
+**Learning objectives:**
 
 - Get an overview of the `Seurat` package and the `R` language syntax
 - Learn and explore the data structure containing a single cell dataset
@@ -46,13 +51,7 @@ knitr::opts_chunk$set(autodep        = TRUE,
 
 **Execution time: 30-60 minutes**
 
-## Loading libraries
-
-We will use `Seurat` as the main tool for the analysis, where we will also apply some other packages. Seurat has a comprehensive [manual webpage](https://satijalab.org/seurat/) that includes many different tutorials you can use for further practicing. Needed packages for this workshop are loaded with the function `library()`, which will make the tools available for us.
-
-An alternative and well-established tool for `R` users is [scanpy](https://scanpy.readthedocs.io/en/stable/). This is used in the `python` version of this course
-
-# Load libraries
+# Setup
 
 ```{r message=FALSE}
 library(tidyverse)
@@ -61,7 +60,7 @@ library(SeuratDisk)
 library(patchwork)
 ```
 
-The Seurat functions will help us run all the necessary steps of the analysis, from preprocessing, to clustering and visualization. There are also several helper and wrapper functions from other libraries that we will use to run the analysis. Use the `help()` function to see what another function does, and it should appear on the `help tab` 
+The Seurat functions will help us run all the necessary steps of the analysis from preprocessing, to clustering and visualization. There are also several helper and wrapper functions from other libraries that we will use to run the analysis. Use the `help()` function to see what another function does, and it should appear on the `help tab` 
 
 ```{r}
 help(FindClusters)
@@ -71,7 +70,7 @@ help(FindClusters)
 knitr::include_graphics("./img/Part01_read_the_data/help_output.png")
 ```
 
-## Loading and understanding the dataset structure
+# Loading datasets
 
 Data can be loaded from different possible formats, which usually has as a dedicated function for loading. For example, the `Read10X()` function reads in the output of the [cellranger](https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/what-is-cell-ranger) pipeline from 10X, returning a unique molecular identified (UMI) count matrix. The values in this matrix represent the number of molecules for each feature (i.e. gene; row) that are detected in each cell (column). 
 
@@ -106,9 +105,9 @@ sparse.size
 dense.size / sparse.size
 ```
 </details>
-\  
 
-## Seurat object structure
+
+# Seurat object structure
 
 >For a technical discussion of the `Seurat` object structure, check out the [Seurat GitHub Wiki](https://github.com/satijalab/seurat/wiki). 
 
@@ -144,7 +143,7 @@ We will look into these slots as they are needed through the course, so do not w
 | `reductions` | A list of DimReduc objects, like PCA or UMAP |
 | `project.name` | User-defined project name (optional) |
 
-### Exploring the Seurat Object
+## Exploring the Seurat Object
 
 Summary information about `Seurat` objects can be had quickly and easily using standard R functions. Object shape/dimensions can be found using the `dim`, `ncol`, and `nrow` functions; cell and feature names can be found using the `colnames` and `rownames` functions, respectively, or the `dimnames` function. A vector of names of `Assay` and `DimReduc` objects contained in a `Seurat` object can be obtained by using `names`.
 
@@ -166,7 +165,7 @@ In addition to rownames and colnames, one can use `dimnames()`, which provides a
 head(x = colnames(x = sample_2))
 ```
 
-## Assay object
+### Assay object
 
 For typical scRNA-seq experiments, a Seurat object will have a single Assay ("RNA"). This assay will also store multiple 'transformations' of the data, including raw counts (@counts slot), normalized data (@data slot), and scaled data for dimensional reduction (@scale.data slot).
 
@@ -213,7 +212,6 @@ head(x = sample_2)
 
 > We will take a look at the `DimReduc` object in the next sessions!
 
-
 ## Subsetting data
 
 You can subset Seurat objects using the function `subset()`. You can subset based on metadata, expression level of a gene or an identity class. Here you can find some examples:
@@ -237,7 +235,7 @@ subset(x = sample_2, subset = orig.ident == "Replicate1")
 subset(x = sample_2, downsample = 100)
 ```
 
-## Saving and loading a Seurat object
+# Saving and loading a Seurat object
 
 You can save the Seurat object using the H5Seurat file format:
 
@@ -264,10 +262,3 @@ import scanpy
 adata = scanpy.read_h5ad("sample_2.h5ad")
 adata
 ```
-
-<details>
-  <summary>**Session Info**</summary>
-```{r}
-sessionInfo()
-```
-</details>
