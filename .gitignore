@@ -55,3 +55,8 @@ Notebooks/Python/Azoospermia/.ipynb_checkpoints
 Notebooks/Python/Extra/.ipynb_checkpoints
 docs/scRNAseq_Seurat_files/
 *.docx
+
+.gitignore
+*.DS_Store
+**/tmp
+**/.ipynb_checkpoints
