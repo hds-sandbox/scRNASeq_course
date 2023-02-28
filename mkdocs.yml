@@ -154,7 +154,7 @@ nav:
         - Preprocessing a sample': python/Part02_filtering_sample3.ipynb
         - Preprocessing a low quality sample: python/Part02_filtering_sample1.ipynb
 - 'R':
-   - Data analysis: scRNAseq_Seurat.md
+   - Data analysis: R/scRNAseq_Seurat.md
 
   # include your page titles and associating .md files here
    

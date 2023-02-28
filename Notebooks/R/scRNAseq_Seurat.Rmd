@@ -1,48 +1,58 @@
 ---
 title: "scRNAseq analysis for Deng et al. (2014)"
-author: "Jose Alejandro Romero Herrera"
-date: '`r Sys.Date()`'
-# knit: (function(inputFile, encoding) { 
-#       rmarkdown::render(inputFile,
-#                         encoding=encoding,
-#                         output_format='all',
-#                         output_dir='./')})
+summary: This is an example of an Rmarkdown development
+date: 2023-02-28
+knit: (function(inputFile, encoding) { 
+      rmarkdown::render(inputFile,
+                        encoding=encoding,
+                        output_format='all',
+                        output_dir='./knit/')})
 output:
-  # To create PDF report, uncomment below
-  #pdf_document:
-  #  toc: yes
-  # html_document:
-  #   number_sections: yes
-  #   theme: yeti
-  #   toc: yes
-  #   toc_float: yes
-  #   df_print: paged
-  #   dev: png
-  md_document
+  github_document: 
+     preserve_yaml: TRUE
+     html_preview: FALSE
+     pandoc_args: [
+      "--wrap", "none" # this is needed to not break admonitions
+    ]
 ---
 
 ```{r knitr, include = FALSE}
 DOCNAME = knitr::current_input()
+DOCNAME = gsub(DOCNAME, pattern = ".Rmd", replacement = "", fixed = T)
 knitr::opts_chunk$set(autodep        = TRUE,
                       cache          = FALSE,
-                      cache.path     = paste0("cache/", DOCNAME, "/"),
-                      cache.comments = TRUE,
                       echo           = TRUE,
                       error          = FALSE,
                       fig.align      = "center",
-                      fig.width      = 10,
-                      fig.height     = 8,
+                      fig.path       = paste0("./img/", DOCNAME, "/"),
                       message        = FALSE,
-                      warning        = FALSE)
+                      warning        = FALSE,
+                      eval           = FALSE)
 ```
 
 # Introduction
 
+!!! note "Section Overview"
+
+    &#128368; **Time Estimation:** 100 minutes  
+
+    &#128172; **Learning Objectives:**    
+    
+    1. Load scRNAseq data into R using the Seurat package
+    2. QC of scRNAseq data
+    3. Normalization of scRNAseq data
+    4. Dimensionality reduction and visualization
+    5. Cell clustering
+    6. Differential Expression Analysis
+    7. Functional Analysis with the gprofiler2 package
+    8. Pseudotime with the slingshot package
+
 scRNAseq data analysis of [Deng et al. (2014)](https://www.science.org/doi/10.1126/science.1245316). This study follows the early embryonic development of mouse cells from zygote to late blastocists (and some adult cells).
 
-![Mouse Early Development https://doi.org/10.1093/molehr/gaw002](../../Notes/mouse_development.jpeg)
+![Mouse Early Development https://doi.org/10.1093/molehr/gaw002](./img/scRNAseq_Seurat/mouse_development.jpeg)
 
 # Load libraries
+
 ```{r message=FALSE, results='hide'}
 library(rhdf5)
 library(tidyverse)
@@ -57,12 +67,14 @@ library(gprofiler2)
 # Load dataset
 
 Data is a matrix of cells in columns and genes in rows. We specify that the row names (our genes) are in the first column.
-```{r message=FALSE}
+
+```{r}
 raw_data <- read.delim("../../Data/example_data/GSE45719_cts.txt", sep = "\t", row.names = 1)
 head(raw_data, n = 5)
 ```
 
 Here is the metadata. The column names of `raw_data` are the same as the row names of metadata.
+
 ```{r}
 metadata <- read.delim("../../Data/example_data/GSE45719_metadata.tsv", header = T, sep = "\t", quote = "", stringsAsFactors = F, row.names = 1)
 head(metadata, n = 5)
@@ -89,6 +101,7 @@ Now that we have our data loaded, we can create a **Seurat Object**, from which 
 - `min.features` will keep cells with at least this many features detected.
 
 This will prevent from keeping cells and genes with an immense majority of 0's as values. In addition, we are removing some cell types we do not want to analyse.
+
 ```{r}
 raw_ann <- CreateSeuratObject(counts = raw_data, meta.data = metadata, min.cells = 3, min.features = 200,)
 raw_ann <- subset(raw_ann, cells = colnames(raw_ann)[!raw_ann$Cell_type %in% c("MII Oocyte","Fibroblast","Adult")])
@@ -120,6 +133,7 @@ head(mm9.gene.annotations)
 ```
 
 We select that mitochondrial genes are those with the **chromosome_name** annotation equal to "MT".
+
 ```{r}
 mt_genes <- mm9.gene.annotations %>% filter(chromosome_name == "MT") %>% pull(external_gene_id)
 mt_genes <- mt_genes %in% rownames(raw_ann)
@@ -158,9 +172,11 @@ We can check the relationship between library size and number of genes detected:
 ```{r QC_before_filtering2, fig.height=4, fig.width=6}
 FeatureScatter(raw_ann, feature1 = "nCount_RNA", feature2 = "nFeature_RNA", group.by = "Cell_type")
 ```
+
 In other experiment with more cells, we might consider removing cells with an unexpectedly high number of detected genes and reads. These cells might be doublets, that is, two cells that were sequenced together! 
 
 ## Filtering
+
 Some automatic filtering can be made using quantiles! Using the extreme upper and lower quantiles (0.99 and 0.01) we can make sure that outliers are removed. In this case, we will remove cells with very low library size and genes detected (lower than quantile 0.01).
 
 ```{r}
@@ -169,6 +185,7 @@ count_min <- quantile(raw_ann$nCount_RNA, probs = 0.01)
 ```
 
 We can subset our dataset using the function `subset()`.
+
 ```{r}
 adata <- subset(raw_ann, subset = 
                     nFeature_RNA > feature_min  & 
@@ -178,11 +195,13 @@ rm(raw_ann) # we remove the initial unfiltered dataset to reduce computational r
 ```
 
 Finally, this is how many cells and genes we have after filtering:
+
 ```{r}
 print(paste0("After filtering: ", dim(adata)[2], " cells ",  dim(adata)[1], " genes"))
 ```
 
 And this is how our filtered data looks like:
+
 ```{r QC_after_filtering, fig.width=12, fig.height=5}
 VlnPlot(adata, 
         features = c("nFeature_RNA", "nCount_RNA", "percent.ribo"),
@@ -201,7 +220,9 @@ adata <- FindVariableFeatures(adata, selection.method = "vst", nfeatures = 2000)
 ```
 
 ## Identification of Variable Genes 
+
 Identify most variable genes and label top 5 most highly variable.
+
 ```{r top_variable_genes, fig.width = 6, fig.height=4}
 top10 <- head(VariableFeatures(adata), 5)
 LabelPoints(plot = VariableFeaturePlot(adata), points = top10, repel = T)
@@ -210,6 +231,7 @@ LabelPoints(plot = VariableFeaturePlot(adata), points = top10, repel = T)
 ## Scale
 
 Gene expression scaling is necessary for proper clustering of our cells. Since genes may be expressed in very different orders of magnitude, extreme expression levels may drive the separation between cells and bias the results.
+
 ```{r message=FALSE, warning=FALSE, results='hide'}
 adata <- ScaleData(adata)
 ```
@@ -217,32 +239,35 @@ adata <- ScaleData(adata)
 ## PCA
 
 We can perform a Principal Component analysis using the following function. PCA can be used for visualization of our cells, as well as clustering and other dimensionality reduction methods such as t-SNE or UMAP.
+
 ```{r, results='hide'}
 adata <- RunPCA(adata)
 ```
+
 We can also calculate and visualize the importance of each gene for each Principal Component.
+
 ```{r results='hide'}
 pcalod_1 <- VizDimLoadings(object = adata, dims = 1) + theme(axis.text.y = element_text(size = 8)) 
 pcalod_2 <- VizDimLoadings(object = adata, dims = 2) + theme(axis.text.y = element_text(size = 8))
 ```
 
-
 ```{r PCA_loadings, fig.height = 5, fig.width=10}
 CombinePlots(plots = list(pcalod_1, pcalod_2), ncol = 2)
 ```
 
-Visualization only show negative loadings cause there are many more than positives. We can see a balanced plot using *balance = TRUE*
+Visualization only show negative loadings cause there are many more than positives. We can see a balanced plot using *balance = TRUE*:
+
 ```{r results = 'hide'}
 pcalod_1 <- VizDimLoadings(object = adata, dims = 1, balanced = TRUE) + theme(axis.text.y = element_text(size = 8)) 
 pcalod_2 <- VizDimLoadings(object = adata, dims = 2, balanced = TRUE) + theme(axis.text.y = element_text(size = 8))
 ```
-
 
 ```{r PCA_loadings_balanced, fig.height = 5}
 CombinePlots(plots = list(pcalod_1, pcalod_2), ncol = 2)
 ```
 
 ## Cell clustering
+
 Now that we have calculated our components, we can proceed to select the number of PCs necessary to perform clustering. There are two methods that we can use to determine the proper number of dimensions:
 
 ### PC selection
@@ -268,6 +293,7 @@ ElbowPlot(adata)
 ```
 
 ### Clustering
+
 We could include 6 PCs, but it does not hurt to use more; there are very few cells in this experiment and we would like to include as much information as possible. Use the `resolution` argument of the `FindClusters()` function to fine-tune the number of clusters to find. The larger the number the less clusters it will find.
 
 ```{r}
@@ -283,12 +309,14 @@ adata <- RunUMAP(adata, dims = 1:20)
 ```
 
 ## PCA
+
 ```{r PCA_plot, fig.height=5, fig.width=10}
 DimPlot(adata, reduction = "pca", group.by = c('Cell_type')) + 
   DimPlot(adata, reduction = "pca", group.by = c('seurat_clusters'))
 ```
 
 ## UMAP
+
 ```{r UMAP_plot, fig.height=5, fig.width=12}
 p1 <- DimPlot(adata, reduction = "umap", group.by = 'Cell_type')
 p2 <- DimPlot(adata, reduction = "umap")
@@ -296,6 +324,7 @@ p1 + p2
 ```
 
 ## TSNE
+
 ```{r TSNE_plot, fig.height=5, fig.width=12}
 p3 <- DimPlot(adata, reduction = "tsne", group.by = 'Cell_type')
 p4 <- DimPlot(adata, reduction = "tsne")
@@ -304,7 +333,8 @@ p3 + p4
 
 # Differential Expression Analysis
 
-Differential testing works a bit different than in bulk RNA-Seq analysis. Usually, your experiment will include dozens or hundreds of cells per cluster/condition. We can make use of Wilcox tests and multiple testing correction to identify statistically significant genes using the `FindAllMarkers()` function. This function will gather all "markers" for each of your *Ident* variable values (your conditions or identified clusters). 
+Differential testing works a bit different than in bulk RNA-Seq analysis. Usually, your experiment will include dozens or hundreds of cells per cluster/condition. We can make use of Wilcox tests and multiple testing correction to identify statistically significant genes using the `FindAllMarkers()` function. This function will gather all "markers" for each of your *Ident* variable values (your conditions or identified clusters).
+
 ```{r}
 markers <- FindAllMarkers(adata,logfc.threshold = 0.5, only.pos = T)
 ```
@@ -318,12 +348,14 @@ head(top10)
 ```
 
 On the other hand, if you want to make a specific comparison, you can use the `FindMarkers()` function:
+
 ```{r}
 cluster2.markers <- FindMarkers(adata, ident.1 = 2, min.pct = 0.5, only.pos = T) # Only cluster 2 markers
 cluster2.markers %>% arrange(desc(avg_log2FC)) %>% head(10)
 ```
 
 Even compare specific clusters against others by selecting `ident.1` and `ident.2`:
+
 ```{r}
 cluster5.markers <- FindMarkers(adata, ident.1 = 5, ident.2 = c(0, 3), # Differences between cluster 5 and clusters 0 and 3
                                 min.pct = 0.5, only.pos = T) 
@@ -332,16 +364,19 @@ cluster5.markers <- FindMarkers(adata, ident.1 = 5, ident.2 = c(0, 3), # Differe
 ## Visualizations
 
 We can visualize all markers in a heatmap just like this! To go easy on the visualization, we only use the top 10 markers.
+
 ```{r DEA_heatmap, fig.height=6}
 DoHeatmap(adata, features = top10$gene) + NoLegend()
 ```
 
-We can also plot the expression on our PCA, tSNE or UMAP. We only need to pass a vector of genes to the `features` argument of `FeaturePlot()`
+We can also plot the expression on our PCA, tSNE or UMAP. We only need to pass a vector of genes to the `features` argument of `FeaturePlot()`.
+
 ```{r DEA_feature}
 FeaturePlot(adata, features = top10$gene[1:4], reduction = "pca")
 ```
 
 Or as a violin plot, a ridge plot or a dot plot.
+
 ```{r DEA_violin, fig.height=5, fig.width=7}
 VlnPlot(adata, features = top10$gene[1]) + RidgePlot(adata, features = top10$gene[1])
 ```
@@ -351,9 +386,11 @@ DotPlot(adata, features = top10$gene[1:10])
 ```
 
 # Functional analysis with gprofiler2
+
 `gost()` function allows us to do functional profiling of gene lists, such as our differentially expressed genes. The function performs statistical enrichment analysis to find over-representation of terms from Gene Ontology, biological pathways like KEGG and Reactome, human disease annotations, etc. This is done by using hypergeometric tests that are corrected for multiple testing.
 
 ## Single query
+
 A standard input of the `gost()` function is a (named) list of gene identifiers. The list can consist of mixed types of identifiers (proteins, transcripts, microarray IDs, etc), SNP IDs, chromosomal intervals or functional term IDs.
 
 The result is a named list where *result* is a data.frame with the enrichment analysis results and *meta* containing a named list with all the metadata for the query.
@@ -371,12 +408,15 @@ head(gostres$result)
 ```
 
 The result data.frame contains the following columns:
+
 ```{r}
 names(gostres$meta)
 ```
 
 ## Multiple queries
+
 The function `gost()` also allows to perform enrichment on multiple input gene lists. Multiple queries are automatically detected if the input query is a list of vectors with gene identifiers and the results are combined into identical data.frame as in case of single query.
+
 ```{r}
 multi_gostres1 <- gost(query = list("chromX" = c("X:1000:1000000", "rs17396340", 
                                                  "GO:0005005", "ENSG00000156103", "NLRP1"),
@@ -401,6 +441,7 @@ head(multi_gostres2$result, 3)
 ```
 
 ## Visualization
+
 The enrichment results are visualized with a Manhattan-like-plot using the function `gostplot()` and the previously found gost results *gostres*:
 
 ```{r gost_interactive}
@@ -409,13 +450,15 @@ The enrichment results are visualized with a Manhattan-like-plot using the funct
 
 The function `publish_gostplot()` takes the static plot object as an input and enables to highlight a selection of interesting terms from the results with numbers and table of results. These can be set with parameter highlight_terms listing the term IDs in a vector or as a data.frame with column “term_id” such as a subset of the result dataframe.
 
-First we create the static plot
+First we create the static plot:
+
 ```{r gost_static}
 p <- gostplot(gostres, capped = FALSE, interactive = FALSE)
 p
 ```
 
 Then we make it in high quality. We can add highlighted terms if we want with the *highlight_terms* argument.
+
 ```{r gost_publishing}
 pp <- publish_gostplot(p, highlight_terms = c("CORUM:3047"),
                        width = NA, height = NA, filename = NULL )
@@ -457,6 +500,7 @@ head(trajectory)
 ```
 
 Now we can use Seurat functions to plot the pseudotime and the calculated trajectory!
+
 ```{r pseudo_plot, fig.height = 4, fig.width=5}
 FeaturePlot(adata, features = "pseudotime", reduction = "pca") + scale_color_viridis_c() + geom_path(data = trajectory, aes(x = PC_1, y = PC_2))
 ```
@@ -466,6 +510,7 @@ DimPlot(adata, group.by = "Cell_type", reduction = "pca")
 ```
 
 We can create a plot that sorts our cells by pseudotime and check that it corresponds to their cell type:
+
 ```{r pseudo_order}
 adata_SCE$pseudotime <- as.numeric(slingPseudotime(sde))
 ggplot(as.data.frame(colData(adata_SCE)), aes(x = pseudotime,
@@ -478,6 +523,7 @@ ggplot(as.data.frame(colData(adata_SCE)), aes(x = pseudotime,
 ```
 
 # Session info
+
 Finally, we create a `session_info()` table that will allow anyone to check what versions of R and packages are we using for reproducibility purposes.
 
 ```{r session-info, cache = FALSE}
