@@ -145,18 +145,25 @@ site_dir: docs # built webpage will be created in the docs folder
 nav:
 - 'Course Introduction': index.md
 - 'Python':
-      - Setup and installation: python/installation.md
-      - Read the data: python/Part01_read_the_data.ipynb
-      - Preprocessing: python/Part02_filtering_sample2.ipynb
-      - Normalize and integrate: python/Part03_normalize_and_integrate.ipynb
-      - Clustering and Differential Expression: python/Part04_clustering.ipynb
-      - Pseudotimes and Cell Fate: python/Part05_cell_fate.ipynb
-      - Gene enrichment: python/Part06_Condition_analysis.ipynb
-      - 'Extra':
-        - Preprocessing a sample': python/Part02_filtering_sample3.ipynb
-        - Preprocessing a low quality sample: python/Part02_filtering_sample1.ipynb
+  - Setup and installation: python/installation.md
+  - Read the data: python/Part01_read_the_data.ipynb
+  - Preprocessing: python/Part02_filtering_sample2.ipynb
+  - Normalize and integrate: python/Part03_normalize_and_integrate.ipynb
+  - Clustering and Differential Expression: python/Part04_clustering.ipynb
+  - Pseudotimes and Cell Fate: python/Part05_cell_fate.ipynb
+  - Gene enrichment: python/Part06_Condition_analysis.ipynb
+  - 'Extra':
+      - Preprocessing a sample': python/Part02_filtering_sample3.ipynb
+      - Preprocessing a low quality sample: python/Part02_filtering_sample1.ipynb
 - 'R':
-   - Data analysis: R/scRNAseq_Seurat.md
+  - Read the data: R/Part01_read_the_data.md
+  - Preprocessing: R/Part02_filtering_sample2.md
+  - Normalization: R/Part03_normalize_and_dim_reduc.md
+  - Integration: R/Part04_integration.md
+  - Clustering and Differential Expression: R/Part05_clustering.md
+  - Pseudotimes: R/Part06_pseudotime.md
+  - 'Extra':
+      - Preprocessing another sample: R/Part02_filtering_sample3.md
 
   # include your page titles and associating .md files here
    
