@@ -1,12 +1,14 @@
 # Project information
 site_name: 'Single cell sequencing data analysis - an introductiory but comprehensive course'
-site_url: "" # This should be nothing cause we build the webpage from local
+site_url: '' # This should be nothing cause we build the webpage from local
 site_author: Samuele Soraggi and Jose Alejandro Romero Herrera
 site_description: >-
-  Outline for course
+  This course is an introduction for how to approach single cell RNAseq data, starting from the count matrix. 
+  It will provide an overview of the fundamentals of scRNAseq analysis, including data QC, normalization, exploration with PCAs and heatmaps, performing differential expression analysis and annotation of the differentially expressed genes. 
+  Participants will also learn how to evaluate confounding and batch effects in the data. 
 
 # Repository
-repo_name: hds-sandbox
+repo_name: hds-sandbox/scRNASeq_course
 repo_url: https://github.com/hds-sandbox/scRNASeq_course
 
 # Configuration
