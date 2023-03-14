@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block site_meta %}
+<script type="application/ld+json" >
+{
+  "@context": "https://schema.org",
+  "@id": "https://hds-sandbox.github.io/#your-course-name",
+  "@type": "Course",
+  "coursePrerequisites": [
+    "#Prerequisite 1",
+    "#Prerequisite 2",
+    "#Prerequisite 3"
+  ],
+  "dct:conformsTo": "https://bioschemas.org/profiles/Course/1.0-RELEASE",
+  "description": "#your course description",
+  "isBasedOn": [
+    "#content-1",
+    "#content-2",
+    "#content-3"
+  ],
+  "keywords": "#keyword1, keyword2, keyword3",
+  "license": {
+    "@id": "#a link to license type, for-example: https://creativecommons.org/licenses/by/4.0/",
+    "@type": "CreativeWork"
+  },
+  "mentions": [
+    {
+      "@id": "#DOI of zenodo repo",
+      "@type": "Thing"
+    },
+    {
+      "@id": "#DOI of zenodo data and materials",
+      "@type": "Thing"
+    }
+  ],
+  "name": "#Name of the course"
+}
+</script >
+{% endblock %}

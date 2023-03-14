@@ -78,12 +78,17 @@ extra_javascript:
   - javascripts/embed-amd.js
 
 plugins:
+  - tags:
+      tags_file: keywords.md
+  - bibtex:
+      bib_file: references.bib
   - search
   - mkdocs-video # embed videos to the docs
   # minify HTML of a page before it is written to disk
   - minify:
       minify_html: true
   - mkdocs-jupyter
+
 
 # Analytics and social media
 extra:
@@ -123,6 +128,9 @@ markdown_extensions:
   - pymdownx.emoji: 
       emoji_generator: !!python/name:materialx.emoji.to_svg  
       emoji_index: !!python/name:materialx.emoji.twemoji  
+      options:
+        custom_icons:
+          - overrides/.icons      
   - pymdownx.highlight: # code highlighting  
       anchor_linenums: true  
   - pymdownx.inlinehilite # inline code highlight  
