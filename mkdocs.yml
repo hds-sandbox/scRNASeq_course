@@ -89,7 +89,6 @@ plugins:
       minify_html: true
   - mkdocs-jupyter
 
-
 # Analytics and social media
 extra:
   analytics:
