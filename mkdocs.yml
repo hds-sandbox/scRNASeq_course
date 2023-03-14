@@ -1,6 +1,6 @@
 # Project information
 site_name: 'Single cell sequencing data analysis - an introductiory but comprehensive course'
-site_url: '' # This should be nothing cause we build the webpage from local
+site_url: 'https://hds-sandbox.github.io/scRNASeq_course/' # This should be nothing cause we build the webpage from local
 site_author: Samuele Soraggi and Jose Alejandro Romero Herrera
 site_description: >-
   This course is an introduction for how to approach single cell RNAseq data, starting from the count matrix. 

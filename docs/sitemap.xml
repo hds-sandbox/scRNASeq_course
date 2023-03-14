@@ -1,117 +1,117 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-         <loc>None</loc>
+         <loc>https://hds-sandbox.github.io/scRNASeq_course/index.html</loc>
          <lastmod>2023-03-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://hds-sandbox.github.io/scRNASeq_course/contributors.html</loc>
          <lastmod>2023-03-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://hds-sandbox.github.io/scRNASeq_course/keywords.html</loc>
          <lastmod>2023-03-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://hds-sandbox.github.io/scRNASeq_course/R/Part01_read_the_data.html</loc>
          <lastmod>2023-03-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://hds-sandbox.github.io/scRNASeq_course/R/Part02_filtering_sample2.html</loc>
          <lastmod>2023-03-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://hds-sandbox.github.io/scRNASeq_course/R/Part02_filtering_sample3.html</loc>
          <lastmod>2023-03-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://hds-sandbox.github.io/scRNASeq_course/R/Part03_normalize_and_dim_reduc.html</loc>
          <lastmod>2023-03-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://hds-sandbox.github.io/scRNASeq_course/R/Part04_integration.html</loc>
          <lastmod>2023-03-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://hds-sandbox.github.io/scRNASeq_course/R/Part05_clustering.html</loc>
          <lastmod>2023-03-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://hds-sandbox.github.io/scRNASeq_course/R/Part06_pseudotime.html</loc>
          <lastmod>2023-03-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://hds-sandbox.github.io/scRNASeq_course/R/rmd/modify_md.html</loc>
          <lastmod>2023-03-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://hds-sandbox.github.io/scRNASeq_course/R/rmd/old/scRNAseq_Seurat.html</loc>
          <lastmod>2023-03-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://hds-sandbox.github.io/scRNASeq_course/python/index.html</loc>
          <lastmod>2023-03-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://hds-sandbox.github.io/scRNASeq_course/python/Part01_read_the_data.html</loc>
          <lastmod>2023-03-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://hds-sandbox.github.io/scRNASeq_course/python/Part02_filtering_sample1.html</loc>
          <lastmod>2023-03-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://hds-sandbox.github.io/scRNASeq_course/python/Part02_filtering_sample2.html</loc>
          <lastmod>2023-03-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://hds-sandbox.github.io/scRNASeq_course/python/Part02_filtering_sample3.html</loc>
          <lastmod>2023-03-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://hds-sandbox.github.io/scRNASeq_course/python/Part03_normalize_and_integrate.html</loc>
          <lastmod>2023-03-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://hds-sandbox.github.io/scRNASeq_course/python/Part04_clustering.html</loc>
          <lastmod>2023-03-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://hds-sandbox.github.io/scRNASeq_course/python/Part05_cell_fate.html</loc>
          <lastmod>2023-03-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://hds-sandbox.github.io/scRNASeq_course/python/Part06_Condition_analysis.html</loc>
          <lastmod>2023-03-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://hds-sandbox.github.io/scRNASeq_course/python/installation.html</loc>
          <lastmod>2023-03-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://hds-sandbox.github.io/scRNASeq_course/keywords.html</loc>
          <lastmod>2023-03-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
