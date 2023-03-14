@@ -45,7 +45,7 @@ Data/
 Notebooks/Python/*.log
 Notebooks/Python/.ipynb_checkpoints
 Notebooks/Python/cache
-/.ipynb_checkpoints
+.ipynb_checkpoints
 Environments/Python/.ipynb_checkpoints
 Notebooks/Python/Extra/.ipynb_checkpoints
 develop/python/.ipynb_checkpoints
@@ -55,3 +55,4 @@ Notebooks/Python/Azoospermia/.ipynb_checkpoints
 Notebooks/Python/Extra/.ipynb_checkpoints
 docs/scRNAseq_Seurat_files/
 *.docx
+sparkmonitor_kernelextension.log
