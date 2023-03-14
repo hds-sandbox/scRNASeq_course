@@ -18,6 +18,7 @@ theme:
   # url: https://squidfunk.github.io/mkdocs-material/
 
   name: material
+  custom_dir: overrides
 
   # Necessary for search to work properly
   include_search_page: false
