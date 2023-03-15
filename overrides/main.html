@@ -1,40 +1,37 @@
 {% extends "base.html" %}
 
 {% block site_meta %}
+
 <script type="application/ld+json" >
-{
-  "@context": "https://schema.org",
-  "@id": "https://hds-sandbox.github.io/scRNASeq_course/",
-  "@type": "Course",
-  "coursePrerequisites": [
-    "Knowledge of R, Rstudio and Rmarkdown or Python and Jupyter Notebooks",
-    "Basic knowledge of scRNAseq technology",
-    "Basic knowledge of data science and statistics such as PCA, clustering and statistical testing"
-  ],
-  "dct:conformsTo": "https://bioschemas.org/profiles/Course/1.0-RELEASE",
-  "description": "This workshop contains a basic tutorial on how to approach scRNAseq experiments, starting from fastq files out of the sequencer. Thus, the workshop does not include any information of laboratory protocols, library preparation or any wet-lab related procedures.",
-  "isBasedOn": [
-    "https://nf-co.re/scrnaseq",
-    "https://satijalab.org/seurat/",
-    "https://cran.r-project.org/web/packages/gprofiler2/vignettes/gprofiler2.html",
-    "https://bioconductor.org/packages/release/bioc/vignettes/slingshot/inst/doc/vignette.html#constructing-smooth-curves-and-ordering-cells"
-  ],
-  "keywords": "single cell, RNAseq, python, R",
-  "license": {
-    "@id": "http://www.apache.org/licenses/",
-    "@type": "CreativeWork"
-  },
-  "mentions": [
     {
-      "@id": "#DOI of zenodo repo",
-      "@type": "Thing"
-    },
-    {
-      "@id": "#DOI of zenodo data and materials",
-      "@type": "Thing"
+      "@context": "https://schema.org",
+      "@id": "https://hds-sandbox.github.io/scRNASeq_course/",
+      "@type": "LearningResource",
+      "dct:conformsTo": "https://bioschemas.org/profiles/TrainingMaterial/1.0-RELEASE",
+      "description": "This workshop contains a basic tutorial on how to approach scRNAseq experiments, starting from fastq files out of the sequencer. Thus, the workshop does not include any information of laboratory protocols, library preparation or any wet-lab related procedures.",
+      "keywords": [
+        "bioinformatics, RNAseq, single cell, NGS, python, R"
+      ],
+      "learningResourceType": [
+        "e-Learning"
+      ],
+      "license": [
+        {
+          "@id": "https://creativecommons.org/licenses/by/4.0/",
+          "@type": "CreativeWork"
+        }
+      ],
+      "mentions": [
+        {
+          "@id": "10.5281/zenodo.7660225",
+          "@type": "Thing"
+        },
+        {
+          "@id": "10.5281/zenodo.7565997",
+          "@type": "Thing"
+        }
+      ],
+      "name": "Introduction to single cell RNAseq analysis workshop"
     }
-  ],
-  "name": "single-cell RNAseq workshop"
-}
-</script>
+    </script >
 {% endblock %}
