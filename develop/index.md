@@ -19,7 +19,7 @@ hide:
 -->
 
 <center>
-Introduction to single cell RNAseq sequencing data analysis
+# Introduction to single cell RNAseq sequencing data analysis
 </center>
 
 **Updated:** 28/02/2023
