@@ -70,6 +70,7 @@ theme:
 
 # Changes to website colours and image parameters
 extra_css:
+  - stylesheets/neoteroi-mkdocs.css
   - stylesheets/extra.css
 
 extra_javascript:
@@ -143,13 +144,17 @@ markdown_extensions:
   - pymdownx.tasklist: # checkbox task list  
       custom_checkbox: true
   - pymdownx.tilde # delete and subscript
+  - neoteroi.cards
 
 # Extra configs
 use_directory_urls: false
 docs_dir: develop # source md files should be saved in the develop folder
 site_dir: docs # built webpage will be created in the docs folder
+copyright: CC-BY-SA 4.0 license
 
 # Page tree
+# include your page titles and associating .md files here
+
 nav:
 - 'Course Introduction': index.md
 - 'Python':
@@ -172,6 +177,3 @@ nav:
   - Pseudotimes: R/Part06_pseudotime.md
   - 'Extra':
       - Preprocessing another sample: R/Part02_filtering_sample3.md
-
-  # include your page titles and associating .md files here
-   

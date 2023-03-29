@@ -23,25 +23,21 @@ Introduction to single cell RNAseq sequencing data analysis
 </center>
 
 **Updated:** 28/02/2023
-**(Page under construction - course not finalized)**
 
 This course is organized as the analysis project of a dataset with cells from human testis representing the spermatogenesis process. We will also make a comparative analysis against a dataset from a person affected by azoospermia (missing or faulty production of spermatozoa). You will learn to use the tools for integrating and analyzing multiple datasets in both `python` and `R` with the use of interactive coding on `Rstudio` or `Jupyter Notebooks`. 
 
 <br>
 
-<!-- AUTHORS -->
-<!-- Format: [author name](link to author page){ .md-button } -->
 <h4>Authors</h4>
 
-[José Alejandro Romero Herrera](https://www.linkedin.com/in/jose-alejandro-romero-herrera/){ .md-button }
-[Samuele Soraggi](https://www.linkedin.com/in/samuelesoraggi/){ .md-button }
+[cards cols="3"(./develop/cards/cards.yaml)]
 
 <hr>
 
 <!-- OVERVIEW OF COURSE -->
 !!! abstract "Overview"
-    
-    &#128172; **Syllabus:**    
+    :book: **Syllabus:** 
+
     1. Data explanation
     2. Read normalization and QC (python: scanpy | R: Seurat)
     3. Exploratory analysis and clustering (python: scanpy | R: Seurat)
@@ -49,11 +45,23 @@ This course is organized as the analysis project of a dataset with cells from hu
     5. Pseudotime and trajectories (python: scanpy/Palantir | R: Seurat/Slingshot)
     6. Functional Analysis (python: scanpy/gseapy) 
 
-    &#128368; **Total Time Estimation:** 6 hours  
+    :clock: **Total Time Estimation:** 6 hours  
+    [comment]: # (No Property in Bioschema)
 
-    &#128193; **Supporting Materials:**  
+    :file_folder: **Supporting Materials:**  
+    [comment]: # (Property in Bioschema: mentions)
+   
+    :man_technologist: **Target Audience:** PhD, MsC, etc.
+    [comment]: # (Property in Bioschema: audience)
 
-    &#128203; **License:** [Tutorial Content is licensed under Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/)
+    :woman_student: **Level:** Beginner/Intermediate/Advanced
+    [comment]: # (Property in Bioschema: educationalLevel)
+
+    :lock: **License:** [Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0) license.](https://creativecommons.org/licenses/by-sa/4.0/legalcode)
+    [comment]: # (Property in Biochema: licence)
+    
+    :coin: **Funding:** This project was funded by the Novo Nordisk Fonden (NNF20OC0063268).
+    [comment]: # (Funding by NNF and others)
 
 !!! warning "Course Requirements"
     
@@ -61,11 +69,24 @@ This course is organized as the analysis project of a dataset with cells from hu
     - Basic knowledge of scRNAseq technology
     - Basic knowledge of data science and statistics such as PCA, clustering and statistical testing
 
+!!! info "Goals"
+    By the end of this workshop you will be able to:
+
+    - Understand your single cell count matrix
+    - QC and normalize your data
+    - Visualize scRNAseq data using UMAP
+    - Cluster your cells
+    - Perform Differential Expression Analysis
+    - Perform Pseudotime and Cell Fate Analysis
+    - Perform Functional Analysis
+
 ## Biological background and motivation
 
 The testis is a complex organ composed of multiple cell types: germ cells at different stages of maturation and several somatic cell types supporting testicular structure and spermatogen-esis; Sertoli cells, peritubular cells, Leydig cells and other interstitial cells, as outlined in the figure below.
 
+<center>
 ![](img/celltypes.png)
+</center>
 
 Technological developments have recently made it possible to perform single-cell RNA sequencing (scRNAseq) of all cell types in a tissue. Understanding how scRNAseq data is processed and how to interpret the data is crucial for our ability to draw correct biological conclusions.
 
@@ -75,6 +96,6 @@ Infertility is a growing problem, especially in the Western world, where approxi
 
 As the last step of this course, we will use a dataset of azoospermic cells to make a comparative analysis against the healthy cells. We will try to find which developmental processes are more highlighted in only one of the two datasets, and see which other differences characterize the azoospermic single cell data.
 
-### Acknowledgements
+## Acknowledgements
 
 - [Center for Health Data Science](https://heads.ku.dk/), University of Copenhagen.
