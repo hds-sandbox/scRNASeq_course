@@ -67,7 +67,7 @@ library(patchwork)
 library(Seurat)
 library(SeuratDisk)
 
-LoadH5Seurat("/work/Intro_to_scRNAseq_R/data/notebooks_data/sample_123.filt.norm.red.h5Seurat")
+LoadH5Seurat("/work/Intro_to_scRNAseq_R/Data/notebooks_data/sample_123.filt.norm.red.h5Seurat")
 ```
 
 
@@ -151,7 +151,7 @@ all.markers %>% group_by(cluster) %>% slice_max(n = 2, order_by = avg_log2FC) # 
 You can easily save your marker dataframes using `write.table()`
 
 ```{r}
-write.table(x = all.markers, file = "/work/Intro_to_scRNAseq_R/data/results/all_markers.tsv", col.names = TRUE, row.names = FALSE, sep = "\t", quote = FALSE)
+write.table(x = all.markers, file = "/work/Intro_to_scRNAseq_R/Data/results/all_markers.tsv", col.names = TRUE, row.names = FALSE, sep = "\t", quote = FALSE)
 ```
 
 
@@ -468,7 +468,7 @@ pheatmap(cor(av.exp), treeheight_col = 0, breaks = seq(-1,1,length.out = 100), d
 # Save our clustered data
 
 ```{r}
-SaveH5Seurat(sample.combined.sct, filename = "/work/Intro_to_scRNAseq_R/data/notebooks_data/sample_123.filt.norm.red.clust.h5Seurat")
+SaveH5Seurat(sample.combined.sct, filename = "/work/Intro_to_scRNAseq_R/Data/notebooks_data/sample_123.filt.norm.red.clust.h5Seurat")
 ```
 
 ***

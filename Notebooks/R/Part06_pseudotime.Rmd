@@ -68,7 +68,7 @@ library(SeuratDisk)
 library(tidyverse)
 library(slingshot)
 
-LoadH5Seurat("/work/Intro_to_scRNAseq_R/data/notebooks_data/sample_123.filt.norm.red.clust.h5Seurat")
+LoadH5Seurat("/work/Intro_to_scRNAseq_R/Data/notebooks_data/sample_123.filt.norm.red.clust.h5Seurat")
 ```
 
 # Pseudotime

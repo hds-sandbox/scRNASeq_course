@@ -230,7 +230,7 @@ FeaturePlot(sample_2, reduction = "umap", features = "nCount_RNA")
 The UMAP plot gives a pretty well-structured output for this dataset. We will keep working further with this filtering. 
 
 ```{r}
-SaveH5Seurat(sample_2, filename = "/work/Intro_to_scRNAseq_R/data/notebooks_data/sample_2.filt.h5Seurat")
+SaveH5Seurat(sample_2, filename = "/work/Intro_to_scRNAseq_R/Data/notebooks_data/sample_2.filt.h5Seurat")
 ```
 
 ***
