@@ -70,7 +70,7 @@ library(Seurat)
 library(SeuratDisk)
 library(sctransform)
 
-LoadH5Seurat("../../Data/notebooks_data/sample_2.filt.h5Seurat")
+LoadH5Seurat("/work/Intro_to_scRNAseq_R/data/notebooks_data/sample_2.filt.h5Seurat")
 ```
 
 # Standard approach for normalization and scaling
@@ -218,7 +218,7 @@ DimPlot(sample_2, reduction = 'umap')
 You can save the object at this point so that it can easily be loaded back in without having to rerun the computationally intensive steps performed above, or easily shared with collaborators.
 
 ```{r saveobject, eval=FALSE}
-SaveH5Seurat(sample_2, filename = "../../Data/notebooks_data/sample_2.filt.norm.h5Seurat")
+SaveH5Seurat(sample_2, filename = "/work/Intro_to_scRNAseq_R/data/notebooks_data/sample_2.filt.norm.h5Seurat")
 ```
 
 ***
@@ -234,7 +234,7 @@ By using [sctransform](https://github.com/ChristophH/sctransform/) based normali
 
 We will reload first the filtered data
 ```{r}
-LoadH5Seurat("../../Data/notebooks_data/sample_2.filt.h5Seurat")
+LoadH5Seurat("/work/Intro_to_scRNAseq_R/data/notebooks_data/sample_2.filt.h5Seurat")
 ```
 
 ## Apply sctransform normalization
@@ -268,7 +268,7 @@ DimPlot(sample_2, label = TRUE) + NoLegend()
 Finally, we shoud can save the object at this point so that it can easily be loaded back in without having to rerun the computationally intensive steps performed above, or easily shared with collaborators.
 
 ```{r saveobject, eval=FALSE}
-SaveH5Seurat(sample_2, filename = "../../Data/notebooks_data/sample_2.filt.norm.h5Seurat")
+SaveH5Seurat(sample_2, filename = "/work/Intro_to_scRNAseq_R/data/notebooks_data/sample_2.filt.norm.h5Seurat")
 ```
 
 <details>

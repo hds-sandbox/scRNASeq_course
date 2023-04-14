@@ -75,8 +75,8 @@ knitr::include_graphics("./img/Part01_read_the_data/help_output.png")
 Data can be loaded from different possible formats, which usually has as a dedicated function for loading. For example, the `Read10X()` function reads in the output of the [cellranger](https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/what-is-cell-ranger) pipeline from 10X, returning a unique molecular identified (UMI) count matrix. The values in this matrix represent the number of molecules for each feature (i.e. gene; row) that are detected in each cell (column). 
 
 ```{r}
-sample_2 <- Read10X(data.dir = "../../../sandbox_scRNA_testAndFeedback/scRNASeq_course/Data/cellranger_sample2/outs/filtered_feature_bc_matrix/")
-sample_3 <- Read10X(data.dir = "../../../sandbox_scRNA_testAndFeedback/scRNASeq_course/Data/cellranger_sample3/outs/filtered_feature_bc_matrix/")
+sample_2 <- Read10X(data.dir = "/work/Intro_to_scRNAseq_R/data/cellranger_sample2/outs/filtered_feature_bc_matrix/")
+sample_3 <- Read10X(data.dir = "/work/Intro_to_scRNAseq_R/data/cellranger_sample3/outs/filtered_feature_bc_matrix/")
 ```
 
 We next use the count matrix to create a `Seurat` object, which is the main data structure used in the study. 

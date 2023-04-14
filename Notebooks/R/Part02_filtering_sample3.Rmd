@@ -45,6 +45,7 @@ The main sources of low quality cells are:
 - missing cell during isolation (e.g. empty droplet in microfluidic machines)
 - multiple cells isolated together (multiplets, usually only two cells - doublets)
 
+
 ***
 
 **Learning objectives:**
@@ -73,7 +74,7 @@ The number of unique genes and total molecules are automatically calculated duri
 
 ```{r mito, fig.height=7, fig.width=13}
 # The [[ operator can add columns to object metadata. This is a great place to stash QC stats
-sample_2[["percent.mt"]] <- PercentageFeatureSet(sample_2, pattern = "^MT-")
+sample_3[["percent.mt"]] <- PercentageFeatureSet(sample_3, pattern = "^MT-")
 ```
 
 <details>
@@ -81,7 +82,7 @@ sample_2[["percent.mt"]] <- PercentageFeatureSet(sample_2, pattern = "^MT-")
   Cell QC metrics are stored in the @meta.data slot of a Seurat Object
   
 ```{r}
-head(sample_2@meta.data, 5)
+head(sample_3@meta.data, 5)
 ```
 
 </details>
@@ -93,7 +94,7 @@ head(sample_2@meta.data, 5)
 We can make use of violin plots to show the distribution of values for different metrics in our data. This is done using the `VlnPlot()` function. The function can take several metrics all together and produce a combined plot with our metrics of interest:
 
 ```{r qc_before, fig.height=7, fig.width=13}
-VlnPlot(sample_2, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+VlnPlot(sample_3, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
 ```
 
 Here we simply look at the distribution of transcripts per cells, detected genes per cell and mithocondrial %. Note how the distribution is bimodal. This usually denotes a cluster of low-quality cells and viable cells. Sometimes filtering out the data points on the bottom-most sides of those graphs removes a lot of cells from a dataset, but this is quite a normal thing, and there is no need to be worried about it. The top side of the distributions show a tail with few cells having a lot of transcripts and genes. It is also good to filter out some of those extreme values - for technical reasons, it will also help in having a better normalization of the data later on.
@@ -112,7 +113,7 @@ In order to create this plot, we make use of the `FeatureScatter()` function:
 ```{r qc_before2, fig.height=7, fig.width=13}
 # FeatureScatter is typically used to visualize feature-feature relationships, but can be used for anything calculated by the object, i.e. columns in object metadata, PC scores etc.
 
-FeatureScatter(sample_2, feature1 = "nCount_RNA", feature2 = "nFeature_RNA") 
+FeatureScatter(sample_3, feature1 = "nCount_RNA", feature2 = "nFeature_RNA") 
 ```
 
 <details>
@@ -120,8 +121,8 @@ FeatureScatter(sample_2, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
   Unfortunately, Seurat does not support yet that functionality. We will need to use the function `FetchData()` (works with gene expression values as well) or select the @meta.data object. Then, we can create a custom plot with ggplot2.
   
 ```{r qc_before_colored}
-data <- FetchData(sample_2, vars = c("nCount_RNA", "nFeature_RNA", "percent.mt"))
-data <- sample_2@meta.data
+data <- FetchData(sample_3, vars = c("nCount_RNA", "nFeature_RNA", "percent.mt"))
+data <- sample_3@meta.data
 
 data %>% ggplot(aes(x = nCount_RNA, y = nFeature_RNA, color = percent.mt)) + geom_point() + scale_color_viridis_c()
 ```
@@ -148,7 +149,7 @@ MIN_GENES = 2000   #minimum number of genes per cell
 MAX_GENES = 6000   #maximum number of genes per cell
 MAX_MITO = 10      #mitocondrial percentage treshold)
 
-sample_2 <- subset(sample_2, subset = nFeature_RNA > MIN_GENES & nFeature_RNA < MAX_GENES &
+sample_3 <- subset(sample_3, subset = nFeature_RNA > MIN_GENES & nFeature_RNA < MAX_GENES &
                      nCounts_RNA > MIN_COUNTS & nCounts_RNA < MAX_COUNTS &
                      percent.mt < 10)
 ```
@@ -157,8 +158,8 @@ sample_2 <- subset(sample_2, subset = nFeature_RNA > MIN_GENES & nFeature_RNA < 
 
 We can now recheck our QC plots:
 ```{r qc_after, fig.height=7, fig.width=13}
-VlnPlot(sample_2, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
-FeatureScatter(sample_2, feature1 = "nCount_RNA", feature2 = "nFeature_RNA") 
+VlnPlot(sample_3, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+FeatureScatter(sample_3, feature1 = "nCount_RNA", feature2 = "nFeature_RNA") 
 ```
 
 
@@ -168,19 +169,19 @@ Another important step consists in filtering out multiplets. Those are in the al
 The external tool `scrublet` simulates doublets by putting together the transcripts of random pairs of cells from the dataset. Then, it assigns a score to each cell in the data, based on the similarity with the simulated doublets. An `expected_doublet_rate` of 0.06 (6%) is quite a typical value for single cell data, but if you have a better estimate from laboratory work, microscope imaging or a specific protocol/sequencing machine, you can also tweak the value. 
 
 ```{r}
-sample_2 <- scrublet_R(pbmc3k, python_home = "/opt/miniconda3/bin/python")
+sample_3 <- scrublet_R(pbmc3k, python_home = "/opt/miniconda3/bin/python")
 ```
 
 It seems that the doublet rate is likely to be lower than 6%, meaning that in this regard the data has been produced pretty well. We now plot the doublet scores assigned to each cell by the algorithm. We can see that most cells have a low score (the score is a value between 0 and 1). Datasets with many doublets show a more bimodal distribution, while here we just have a light tail beyond 0.1. 
 
 ```{r}
-VlnPlot(sample_2, features = "doublet_score")
+VlnPlot(sample_3, features = "doublet_score")
 ```
 
 We can choose 0.1 as filtering treshold for the few detected doublets or alternatively use the automatic selection of doublets by the algorithm. We will choose the last option and use the automatically chosen doublets.
 
 ```{r}
-sample_2 <- subset(sample_2, subset = doublet_score == FALSE)
+sample_3 <- subset(sample_3, subset = doublet_score == FALSE)
 ```
 
 # Filtering evaluation
@@ -193,21 +194,21 @@ A quite basic but easy way to look at the results of our filtering is to normali
 TPM normalization and its logarithm are done within a single step, using the `NormalizeData()` function, while scaling is done using the `ScaleData()` function: 
 
 ```{r}
-sample_2 <- NormalizeData(sample_2, normalization.method = "LogNormalize")
-sample_2 <- ScaleData(sample_2)
+sample_3 <- NormalizeData(sample_3, normalization.method = "LogNormalize")
+sample_3 <- ScaleData(sample_3)
 ```
 
 Then, in order to reduce computational times, we select the *most variable genes (MVG)* to perform PCA and visualization. MVG are calculated based on the LogNormalized reads. We will select the top 2000 MVGs
 
 ```{r}
-sample_2 <- FindVariableFeatures(sample_2, nfeatures = 2000)
+sample_3 <- FindVariableFeatures(sample_3, nfeatures = 2000)
 ```
 
 Now we perform PCA. We select our calculated variable genes using the `VariableFeatures()` function, and visualize the PCA projection with the `FeaturePlot()` function. We can color the dots using one of our QC metrics using the `features` parameter:
 
 ```{r}
-sample_2 <- RunPCA(sample_2, features = VariableFeatures(object = sample_2))
-FeaturePlot(sample_2, reduction = 'pca', features = "nCount_RNA")
+sample_3 <- RunPCA(sample_3, features = VariableFeatures(object = sample_3))
+FeaturePlot(sample_3, reduction = 'pca', features = "nCount_RNA")
 ```
 
 We can already see how the PCA has a clear structure with only a few dots sparsed around. It seems the filtering gave a good result. 
@@ -215,7 +216,7 @@ We can already see how the PCA has a clear structure with only a few dots sparse
 Next, we need to select how many Principal Components we should use for visualizing the data using UMAP. We plot the variance ratio to see how each component of the PCA changes in variability using the Elbow method. The explained variance of each component can be plot using the function `ElbowPlot()`:
 
 ```{r}
-ElbowPlot(sample_2)
+ElbowPlot(sample_3)
 ```
 
 We can choose a threshold to be used in all algorithms that use PCA to calculate any quantity. for example, we can select 15 PCA components, since the amount of variability explained dramatically drops after 10 PCs, more or less.
@@ -223,14 +224,14 @@ We can choose a threshold to be used in all algorithms that use PCA to calculate
 Finally, We project the data using the UMAP algorithm. This is very good in preserving the structure of a dataset in low dimension, if any is present. We first calculate the neighbors of each cell (that is, its most similar cells), those are then used for the UMAP. The neighbors are calculated using the PCA matrix instead of the full data matrix, so we can choose the number of PCA components to use. Many algorithms work on the PCA, so you will see the parameter used again in other places.
 
 ```{r}
-sample_2 <- RunUMAP(sample_2, dims = 1:10)
-FeaturePlot(sample_2, reduction = "umap", features = "nCount_RNA")
+sample_3 <- RunUMAP(sample_3, dims = 1:10)
+FeaturePlot(sample_3, reduction = "umap", features = "nCount_RNA")
 ```
 
 The UMAP plot gives a pretty well-structured output for this dataset. We will keep working further with this filtering. 
 
 ```{r}
-SaveH5Seurat(sample_2, filename = "../../Data/notebooks_data/sample_2.filt.h5Seurat")
+SaveH5Seurat(sample_3, filename = "/work/Intro_to_scRNAseq_R/data/notebooks_data/sample_3.filt.h5Seurat")
 ```
 
 ***
