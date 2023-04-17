@@ -73,8 +73,8 @@ library(SeuratDisk)
 library(sctransform)
 library(kBET)
 
-LoadH5Seurat("/work/Intro_to_scRNAseq_R/Data/notebooks_data/sample_2.filt.norm.h5Seurat")
-LoadH5Seurat("/work/Intro_to_scRNAseq_R/Data/notebooks_data/sample_3.filt.norm.h5Seurat")
+sample_2 <- LoadH5Seurat("/work/Intro_to_scRNAseq_R/Results/sample_2.filt.norm.h5Seurat")
+sample_3 <- LoadH5Seurat("/work/Intro_to_scRNAseq_R/Results/sample_3.filt.norm.h5Seurat")
 ```
 
 First of all, we need to make a list of datasets.
@@ -126,7 +126,7 @@ DimPlot(sample.combined.sct, reduction = "umap")
 
 We should save our integrated object for further analysis.
 ```{r}
-SaveH5Seurat(sample.combined.sct, filename = "/work/Intro_to_scRNAseq_R/Data/notebooks_data/sample_123.filt.norm.red.h5Seurat")
+SaveH5Seurat(sample.combined.sct, filename = "/work/Intro_to_scRNAseq_R/Results/sample_23.filt.norm.red.h5Seurat")
 ```
 
 

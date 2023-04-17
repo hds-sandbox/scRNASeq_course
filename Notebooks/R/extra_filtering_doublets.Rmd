@@ -1,0 +1,21 @@
+# Doublet filtering
+Another important step consists in filtering out multiplets. Those are in the almost totality of the cases doublets, because triplets and above multiplets are extremely rare. Read [this more technical blog post](https://liorpachter.wordpress.com/2019/02/07/sub-poisson-loading-for-single-cell-rna-seq/) for more explanations about this.
+
+The external tool `scrublet` simulates doublets by putting together the transcripts of random pairs of cells from the dataset. Then, it assigns a score to each cell in the data, based on the similarity with the simulated doublets. An `expected_doublet_rate` of 0.06 (6%) is quite a typical value for single cell data, but if you have a better estimate from laboratory work, microscope imaging or a specific protocol/sequencing machine, you can also tweak the value. 
+
+```{r}
+library(scrubletR)
+sample_2 <- scrublet_R(pbmc3k, python_home = "/usr/local/bin/python")
+```
+
+It seems that the doublet rate is likely to be lower than 6%, meaning that in this regard the data has been produced pretty well. We now plot the doublet scores assigned to each cell by the algorithm. We can see that most cells have a low score (the score is a value between 0 and 1). Datasets with many doublets show a more bimodal distribution, while here we just have a light tail beyond 0.1. 
+
+```{r}
+VlnPlot(sample_2, features = "doublet_score")
+```
+
+We can choose 0.1 as filtering treshold for the few detected doublets or alternatively use the automatic selection of doublets by the algorithm. We will choose the last option and use the automatically chosen doublets.
+
+```{r}
+sample_2 <- subset(sample_2, subset = doublet_score == FALSE)
+```

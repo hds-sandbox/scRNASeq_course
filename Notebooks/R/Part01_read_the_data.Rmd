@@ -91,16 +91,16 @@ sample_3 <- CreateSeuratObject(counts = sample_3, project = "spermatogenesis")
   <summary>**What does data in a count matrix look like?**</summary>
 
 ```{r}
-# Lets examine a few genes in the first thirty cells
-sample_2[c(1:3), 1:30]
+# Lets examine a few genes. We will explain how to access the count matrix below.
+head(sample_2[["RNA"]]@counts)
 ```
 
 The `.` values in the matrix represent 0s (no molecules detected). Since most values in an scRNA-seq matrix are 0, Seurat uses a sparse-matrix representation whenever possible. This results in significant memory and speed savings for Drop-seq/inDrop/10x data.
 
 ````{r}
-dense.size <- object.size(as.matrix(sample_2))
+dense.size <- object.size(as.matrix(sample_2[["RNA"]]@counts))
 dense.size
-sparse.size <- object.size(sample_2)
+sparse.size <- object.size(sample_2[["RNA"]]@counts)
 sparse.size
 dense.size / sparse.size
 ```
@@ -148,6 +148,7 @@ We will look into these slots as they are needed through the course, so do not w
 Summary information about `Seurat` objects can be had quickly and easily using standard R functions. Object shape/dimensions can be found using the `dim`, `ncol`, and `nrow` functions; cell and feature names can be found using the `colnames` and `rownames` functions, respectively, or the `dimnames` function. A vector of names of `Assay` and `DimReduc` objects contained in a `Seurat` object can be obtained by using `names`.
 
 ```{r}
+# General info about the data
 sample_2
 ```
 
@@ -190,27 +191,53 @@ names(x = sample_2)
 sample_2[["RNA"]]
 ```
 
-Accessing data from an `Seurat` object is done with the `GetAssayData` function. Adding expression data to either the `counts`, `data`, or `scale.data` slots can be done with `SetAssayData`. New data must have the same cells in the same order as the current expression data. Data added to `counts` or `data` must have the same features as the current expression data.
+Accessing data from an `Seurat` object is done with the `GetAssayData` function. Adding expression data to either the `counts`, `data`, or `scale.data` slots can be done with `SetAssayData`. New data must have the same cells in the same order as the current expression data. Data added to `counts` or `data` must have the same features as the current expression data. 
 
 ```{r}
-GetAssayData(object = sample_2, slot = 'scale.data')[1:3, 1:3]
+GetAssayData(object = sample_2, slot = 'counts')[1:3, 1:3]
+```
+You can also access the data using the double extract operator `[[` on an Assay name, followed by `@` operator and the name of the data (counts, data or scale.data).
+
+```{r}
+head(sample_2[["RNA"]]@counts)
 ```
 
-Cell-level meta data can be accessed with the single `[[` [extract operator](https://www.rdocumentation.org/packages/base/versions/3.5.1/topics/Extract) or using the `$` sigil. Pulling with the `$` sigil means only one bit of meta data can be pulled at a time, though tab-autocompletion has been enabled for it, making it ideal for interactive use. Adding cell-level meta data can be set using the single `[[` [extract operator](https://www.rdocumentation.org/packages/base/versions/3.5.1/topics/Extract) as well, or by using `AddMetaData`.
+Cell-level meta data (as a data frame) can be accessed using the `@` operator and the `meta.data` slot. You can also access individual columns using the `$` sigil. Pulling with the `$` sigil means only one bit of meta data can be pulled at a time, though tab-autocompletion has been enabled for it, making it ideal for interactive use. Adding cell-level meta data can be set using the `AddMetaData` function or the `$` sigil.
 
 ```{r}
 # Cell-level meta data is stored as a data frame
 # Standard data frame functions work on the meta data data frame
-colnames(x = sample_2[[]])
+head(sample_2@meta.data)
 ```
 
 ```{r}
 # The $ sigil can only pull bit of meta data at a time; however, tab-autocompletion
 # has been enabled for the $ sigil, making it ideal for interactive use
-head(x = sample_2)
+head(sample_2$nCount_RNA)
 ```
 
 > We will take a look at the `DimReduc` object in the next sessions!
+
+Finally, we can talk about identity classes. An identity class is just a categorical metadata column used to identify the cells. This could be a cluster number, cell type, or batch number. The identity class can be used in many functions as a shortcut to separate group of cells. You can check which column is being used as a identity class by checking the `active.ident` slot, or the `Ident()` function:
+
+```{r}
+head(sample_2@active.ident)
+head(Idents(sample_2))
+```
+
+In our case, it is the `orig.ident` metadata column. This metadata column only contains `spermatogenesis` as cell description, so it is not very helpful at the moment.
+
+```{r}
+table(sample_2@active.ident)
+```
+
+We can create a new metadata column with a random identifier, and assign it as an active ident using also the `Idents()` function:
+
+```{r}
+sample_2$random_ID <- sample(1:4, size = ncol(sample_2), replace = TRUE)
+Idents(sample_2) <- sample_2$random_ID
+head(Idents(sample_2))
+```
 
 ## Subsetting data
 
@@ -218,19 +245,26 @@ You can subset Seurat objects using the function `subset()`. You can subset base
 
 ```{r}
 # Subset Seurat object based on a cell identity class
-subset(x = sample_2, idents = "B cells")
-subset(x = sample_2, idents = c("CD4 T cells", "CD8 T cells"), invert = TRUE)
+subset(x = sample_2, idents = 1)
+subset(x = sample_2, idents = c(1, 2), invert = TRUE) # invert = TRUE will take all cells except 1 and 2
+```
 
+```{r}
 # Subset on the expression level of a gene/feature
-subset(x = sample_2, subset = MS4A1 > 3)
+subset(x = sample_2, subset = CAP1 > 3)
+```
 
-# Subset on a combination of criteria
-subset(x = sample_2, subset = MS4A1 > 3 & PC1 > 5)
-subset(x = sample_2, subset = MS4A1 > 3, idents = "B cells")
-
+```{r}
 # Subset on a value in the object meta data
-subset(x = sample_2, subset = orig.ident == "Replicate1")
+subset(x = sample_2, subset =  nCount_RNA > 1000) # metadata
+```
 
+```{r}
+# Subset on a combination of criteria
+subset(x = sample_2, subset = CAP1 > 3 & nCount_RNA > 1000)
+```
+
+```{r}
 # Downsample the number of cells per identity class
 subset(x = sample_2, downsample = 100)
 ```
@@ -240,23 +274,25 @@ subset(x = sample_2, downsample = 100)
 You can save the Seurat object using the H5Seurat file format:
 
 ```{r}
-SaveH5Seurat(sample_2, filename = "sample_2.h5Seurat")
+SaveH5Seurat(sample_2, filename = "/work/Intro_to_scRNAseq_R/Results/sample_2.h5Seurat")
 ```
 
 If you plan to work with `scanpy`, you might want to convert H5Seurat into h5ad format. This is easily done using the `Convert()` function. You can, of course, transform an h5ad file into H5Seurat using the same function
 ```{r}
-Convert("sample_2.h5Seurat", dest = "h5ad")
-Convert("sample_2.h5ad", dest = "h5seurat", overwrite = TRUE)
+#Convert("/work/Intro_to_scRNAseq_R/Results/sample_2.h5Seurat", dest = "h5ad")
+Convert("/work/Intro_to_scRNAseq_R/Results/sample_2.h5ad", dest = "h5Seurat", overwrite = TRUE)
 ```
 
 To load a H5Seurat object, use the following function `LoadH5Seurat()`:
 
 ```{r}
-LoadH5Seurat("sample_2.h5seurat")
+sample_2 <- LoadH5Seurat("/work/Intro_to_scRNAseq_R/Results/sample_2.h5seurat")
 ```
 
 Then you can use it in python!
-```{python}
+
+```{python eval=FALSE, include=FALSE}
+# Do not run!
 import scanpy
 
 adata = scanpy.read_h5ad("sample_2.h5ad")
