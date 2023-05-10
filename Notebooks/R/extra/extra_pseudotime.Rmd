@@ -77,7 +77,7 @@ We will use the package [Slignshot](https://bioconductor.org/packages/release/bi
 
 ```{r}
 sample.combined.SCE <- as.SingleCellExperiment(sample.combined.sct)
-sde <- slingshot(sample.combined.SCE, reducedDim = 'PCA')
+sde <- slingshot(sample.combined.SCE, reducedDim = 'UMAP')
 ```
 
 The using the `slingshot` package it is possible to plot our components and the calculated trajectory. Unfortunately, it does not work with ggplot. 
@@ -85,7 +85,7 @@ The using the `slingshot` package it is possible to plot our components and the 
 ```{r sling_pseudo_plot}
 cols <- colorRampPalette(viridis::viridis(3))
 cols <- cols(50)[cut(sde$slingPseudotime_1, breaks=50)]
-plot(reducedDim(sample.combined.SCE, "PCA"), pch=16, col = cols) # sample.combined.SCE contains, PC1 and PC2, and colored by pseudotime
+plot(reducedDim(sample.combined.SCE, "UMAP"), pch=16, col = cols) # sample.combined.SCE contains, PC1 and PC2, and colored by pseudotime
 lines(slingshot::SlingshotDataSet(sde), lwd = 2) # here we plot the trajectory
 ```
 
@@ -99,7 +99,7 @@ head(trajectory)
 
 Now we can use Seurat functions to plot the pseudotime and the calculated trajectory!
 ```{r pseudo_plot, fig.height = 4, fig.width=5}
-FeaturePlot(sample.combined.sct, features = "pseudotime", reduction = "pca") + scale_color_viridis_c() + geom_path(data = trajectory, aes(x = PC_1, y = PC_2))
+FeaturePlot(sample.combined.sct, features = "pseudotime", reduction = "umap") + scale_color_viridis_c()# + geom_path(data = trajectory, aes(x = PC_1, y = PC_2))
 ```
 
 ```{r fig.height = 4, fig.width = 5.7}

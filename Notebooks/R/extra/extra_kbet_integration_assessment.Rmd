@@ -1,0 +1,134 @@
+---
+title: "Datasets integration"
+author: "Jose Alejandro Romero Herrera"
+date: '`r Sys.Date()`'
+knit: (function(inputFile, encoding) { 
+      rmarkdown::render(inputFile,
+                        encoding=encoding,
+                        output_format='all',
+                        output_dir='./')})
+output:
+  # To create PDF report, uncomment below
+  #pdf_document:
+  #  toc: yes
+  md_document:
+    variat: markdown_github
+    df_print: kable
+    dev: png
+---
+
+```{r knitr, include = FALSE}
+DOCNAME = knitr::current_input()
+DOCNAME = gsub(DOCNAME, pattern = ".Rmd", replacement = "")
+knitr::opts_chunk$set(autodep        = TRUE,
+                      cache          = FALSE,
+                      cache.path     = paste0("cache/", DOCNAME, "/"),
+                      cache.comments = TRUE,
+                      echo           = TRUE,
+                      error          = FALSE,
+                      fig.align      = "center",
+                      fig.path       = paste0("./img/", DOCNAME, "/"),
+                      fig.width      = 8,
+                      fig.height     = 5,
+                      message        = FALSE,
+                      warning        = FALSE)
+```
+
+**Motivation:**
+
+The joint analysis of two or more single-cell datasets poses unique challenges. In particular, identifying cell populations that are present across multiple datasets can be problematic under standard workflows. Seurat v4 includes a set of methods to match (or ‘align’) shared cell populations across datasets. These methods first identify cross-dataset pairs of cells that are in a matched biological state (‘anchors’), can be used both to correct for technical differences between datasets (i.e. batch effect correction), and to perform comparative scRNA-seq analysis of across experimental conditions.
+
+![](./img/Part04/integration_explained.jpeg)
+<details>
+  <summary>**Figure caption**</summary>
+(A) Representation of two datasets, reference and query, each of which originates from a separate single-cell experiment. The two datasets share cells from similar biological states, but the query dataset contains a unique population (in black).
+(B) We perform canonical correlation analysis, followed by L2 normalization of the canonical correlation vectors, to project the datasets into a subspace defined by shared correlation structure across datasets.
+(C) In the shared space, we identify pairs of MNNs across reference and query cells. These should represent cells in a shared biological state across datasets (gray lines) and serve as anchors to guide dataset integration. In principle, cells in unique populations should not participate in anchors, but in practice, we observe “incorrect” anchors at low frequency (red lines).
+(D) For each anchor pair, we assign a score based on the consistency of anchors across the neighborhood structure of each dataset.
+(E) We utilize anchors and their scores to compute “correction” vectors for each query cell, transforming its expression so it can be jointly analyzed as part of an integrated reference.
+</details>
+
+Below, we  demonstrate methods for  scRNA-seq integration as described in  [Stuart\*, Butler\* et al, 2019](https://www.cell.com/cell/fulltext/S0092-8674(19)30559-8) to perform a comparative analysis of human immune cells (PBMC) in either a [resting or interferon-stimulated state](https://www.nature.com/articles/nbt.4042). 
+
+***
+
+**Learning objectives:**
+- Create an 'integrated' data assay for downstream analysis
+- Identify cell types that are present in both datasets
+- Assess integration success.
+
+***
+
+**Execution time: 40 minutes** if using at least 2 cores (that is, at least 16 virtual-CPUs). Expect longer time with slower hardware, and a RAM usage of some 40-100GB.
+
+***
+
+# Setup
+
+```{r}
+library(tidyverse)
+library(patchwork)
+library(Seurat)
+library(SeuratDisk)
+library(sctransform)
+#library(kBET)
+
+sample_2 <- LoadH5Seurat("/work/Intro_scRNAseq_R/Results/sample_2.filt.norm.h5Seurat")
+sample_3 <- LoadH5Seurat("/work/Intro_scRNAseq_R/Results/sample_3.filt.norm.h5Seurat")
+```
+
+```{r}
+batch.estimate <- kBET(t(as.matrix(sample.combined.sct@assays$SCT@data)), sample.combined.sct$sample, plot=FALSE)
+plot.data <- data.frame(class=rep(c('observed', 'expected'), 
+                                  each=length(batch.estimate$stats$kBET.observed)), 
+                        data =  c(batch.estimate$stats$kBET.observed,
+                                  batch.estimate$stats$kBET.expected))
+```
+
+
+```{r}
+ggplot(plot.data, aes(class, data)) + geom_boxplot() + 
+     labs(x='Test', y='Rejection rate',title='kBET test results') +
+     theme_bw() +  
+     scale_y_continuous(limits=c(0,1))
+```
+
+
+```{r}
+# Get scaled data (the one used for UMAP and PCA)
+df <- data.frame(t(sample.combined.sct@assays$integrated@scale.data))
+
+# Set number of k-NN iterations and k
+nsamples <- 1000
+k <- 50
+
+# Perform k-NN and count frequency of group column for sampled data point
+
+# Randomly sample one observation
+sampled_df <- df %>%
+  sample_n(nsamples)
+
+# Find k-NN to the sampled data (row = cell). k=k+1 because the first knn will be the same row as the sampled one
+knn_fit <- FNN::get.knnx(data = df, query = df, k = k+1)
+
+indexes <- knn_fit$nn.index[,1:k+1]
+
+result <- data.frame(matrix(sample.combined.sct$sample[indexes], ncol = k)) 
+
+# get all possible categories across the entire data frame
+categories <- unique(unlist(result))
+
+# count the frequency of each categorical value per row
+freq <- apply(result, 1, function(x) {
+  table(factor(x, levels = categories))
+})
+
+# convert the frequency table to a data frame
+freq <- data.frame(t(freq))
+
+# Perform fisher test for small data, chi-squared test for larger samples
+#fisher.test(as.table(freq_df))
+chisq.test(freq$sample_2, freq$sample_3, simulate.p.value = T)
+```
+
+

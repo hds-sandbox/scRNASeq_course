@@ -40,7 +40,7 @@ Biologically similar cells are not necessarily directly comparable in a dataset 
 
 To avoid these differences, a normalization approach is needed. Normalization is one of the main topics of scRNAseq data preprocessing, and many advanced techniques takes into account the statistical distribution of counts and the presence of technical/biological features of interest.
 
-The most standard approach is the TMP (Transcript Per Million) normalization followed by logarithmization and standardization. We have applied this technique to have a double-check on our data filtering in our previous notebook. 
+The most standard approach is the TMP (Transcript Per Million) normalization followed by logarithmization and standardization. We have applied this technique to have a double-check on our data filtering in our previous notebook.
 
 As a rule of thumb, TPM+log+standardization is no longer consider a very good normalization technique, especially when you are integrating multiple datasets together. Instead, it is suggested to use more advanced methods for considering technical and biological covariates as part of a statistical model for the transcripts. One of the current state-of-the-art method is scTransform. We will apply it in this notebook.
 
@@ -48,12 +48,7 @@ The difference between the two methods will be easily observed when performing d
 
 ***
 
-**Learning objectives:**
-- Normalization of datasets
-- Perform dimensionality reduction
-- Select an adequate number of principal components
-- Perform UMAP and visualization
-- Understand and apply scTransformation of the data.
+**Learning objectives:** - Normalization of datasets - Perform dimensionality reduction - Select an adequate number of principal components - Perform UMAP and visualization - Understand and apply scTransformation of the data.
 
 ***
 
@@ -61,7 +56,7 @@ The difference between the two methods will be easily observed when performing d
 
 ***
 
-# Setup
+## Setup
 
 ```{r}
 library(tidyverse)
@@ -70,12 +65,12 @@ library(Seurat)
 library(SeuratDisk)
 library(sctransform)
 
-LoadH5Seurat("/work/Intro_to_scRNAseq_R/Results/sample_2.filt.h5Seurat")
+sample_2 <- LoadH5Seurat("/work/Intro_scRNAseq_R/Results/sample_2.filt.h5Seurat")
 ```
 
-# Standard approach for normalization and scaling
+## Standard approach for normalization and scaling
 
-## Normalizing the data
+### Normalizing the data
 
 After removing unwanted cells from the dataset, the next step is to normalize the data. By default, we employ a global-scaling normalization method "LogNormalize" that normalizes the feature expression measurements for each cell by the total expression, multiplies this by a scale factor (10,000 by default), and log-transforms the result. Normalized values are stored in `sample_2[["RNA"]]@data`.
 
@@ -91,7 +86,7 @@ sample_2 <- NormalizeData(sample_2)
 
 ***
 
-## Identification of highly variable features (feature selection)
+### Identification of highly variable features (feature selection)
 
 We next calculate a subset of features that exhibit high cell-to-cell variation in the dataset (i.e, they are highly expressed in some cells, and lowly expressed in others). Seurat authors and others [others](https://www.nature.com/articles/nmeth.2645) have found that focusing on these genes in downstream analysis helps to highlight biological signal in single-cell datasets.
 
@@ -102,12 +97,14 @@ sample_2 <- FindVariableFeatures(sample_2, selection.method = 'vst', nfeatures =
 ```
 
 We can access a dataframe with our variable features using the function `VariableFeatures()`:
+
 ```{r}
 # Identify the 10 most highly variable genes
 top10 <- head(VariableFeatures(sample_2), 10)
 ```
 
 We can plot variable features with the function `VariableFeaturePlot()`, and add labels using `LabelPoints()` function.
+
 ```{r var_features, fig.height=5, fig.width=11}
 plot1 <- VariableFeaturePlot(sample_2) # Plot without labels
 plot2 <- LabelPoints(plot = plot1, points = top10, repel = TRUE) # Plot with labels. repel = TRUE will jitter the dots
@@ -116,14 +113,14 @@ plot1 + plot2
 
 ***
 
-## Scaling the data
+### Scaling the data
 
 Next, we apply a linear transformation ('scaling') that is a standard pre-processing step prior to dimensional reduction techniques like PCA. The `ScaleData()` function:
 
-* Shifts the expression of each gene, so that the mean expression across cells is 0
-* Scales the expression of each gene, so that the variance across cells is 1
-    + This step gives equal weight in downstream analyses, so that highly-expressed genes do not dominate
-* The results of this are stored in `sample_2[["RNA"]]@scale.data`
+-   Shifts the expression of each gene, so that the mean expression across cells is 0
+-   Scales the expression of each gene, so that the variance across cells is 1
+    -   This step gives equal weight in downstream analyses, so that highly-expressed genes do not dominate
+-   The results of this are stored in `sample_2[["RNA"]]@scale.data`
 
 ```{r regress, fig.height=7, fig.width=11, results='hide'}
 all.genes <- rownames(sample_2)
@@ -131,26 +128,43 @@ sample_2 <- ScaleData(sample_2, features = all.genes)
 ```
 
 <details>
-  <summary>**This step takes too long! Can I make it faster?**</summary>
+
+<summary>
+
+**This step takes too long! Can I make it faster?**
+
+</summary>
+
 Scaling is an essential step in the Seurat workflow, but only on genes that will be used as input to PCA. Therefore, the default in `ScaleData()` is only to perform scaling on the previously identified variable features (2,000 by default). To do this, omit the `features` argument in the previous function call, i.e.
+
 ```{r regressvar, fig.height=7, fig.width=11, results='hide',eval = FALSE}
 sample_2 <- ScaleData(sample_2)
 ```
-Your PCA and clustering results will be unaffected. However, Seurat heatmaps (produced as shown below with `DoHeatmap()`) require genes in the heatmap to be scaled, to make sure highly-expressed genes don't dominate the heatmap. To make sure we don't leave any genes out of the heatmap later, we are scaling all genes in this tutorial. 
+
+Your PCA and clustering results will be unaffected. However, Seurat heatmaps (produced as shown below with `DoHeatmap()`) require genes in the heatmap to be scaled, to make sure highly-expressed genes don't dominate the heatmap. To make sure we don't leave any genes out of the heatmap later, we are scaling all genes in this tutorial.
+
 </details>
 
 <details>
-  <summary>**Remove unwanted sources of variation**</summary>
+
+<summary>
+
+**Remove unwanted sources of variation**
+
+</summary>
+
 In Seurat we can also use the `ScaleData()` function to remove unwanted sources of variation from a single-cell dataset. For example, we could 'regress out' heterogeneity associated with (for example) cell cycle stage, or mitochondrial contamination:
 
-```{r regressvarmt, fig.height=7, fig.width=11, results='hide', eval = FALSE}
-sample_2 <- ScaleData(sample_2, vars.to.regress = 'percent.mt')
+```{r regressvarmt, results='hide', eval = FALSE}
+#sample_2 <- ScaleData(sample_2, vars.to.regress = 'percent.mt')
 ```
+
 </details>
 
 ***
 
-## Perform linear dimensional reduction
+### Perform linear dimensional reduction
+
 Next we perform PCA on the scaled data. By default, only the previously determined variable features are used as input, but can be defined using `features` argument if you wish to choose a different subset.
 
 ```{r pca,results='hide'}
@@ -178,7 +192,8 @@ DimHeatmap(sample_2, dims = 1, cells = 500,
 DimHeatmap(sample_2, dims = 1:15, cells = 500, nfeatures = 30, balanced = TRUE)
 ```
 
-## Determine the 'dimensionality' of the dataset
+### Determine the 'dimensionality' of the dataset
+
 To overcome the extensive technical noise in any single feature for scRNA-seq data, Seurat clusters cells based on their PCA scores, with each PC essentially representing a 'metafeature' that combines information across a correlated feature set. The top principal components therefore represent a robust compression of the dataset. However, how many components should we choose to include? 10? 20? 100?
 
 In [Macosko *et al*](http://www.cell.com/abstract/S0092-8674(15)00549-8), Seurat implemented a resampling test inspired by the JackStraw procedure. It randomly permutes a subset of the data (1% by default) and rerun PCA, constructing a 'null distribution' of feature scores, and repeat this procedure. Thus, it identifies 'significant' PCs as those who have a strong enrichment of low p-value features.
@@ -191,72 +206,59 @@ sample_2 <- ScoreJackStraw(sample_2, dims = 1:20)
 
 The `JackStrawPlot()` function provides a visualization tool for comparing the distribution of p-values for each PC with a uniform distribution (dashed line). 'Significant' PCs will show a strong enrichment of features with low p-values (solid curve above the dashed line). In this case it appears that there is a sharp drop-off in significance after the first 10-12 PCs.
 
-```{r jsplots, fig.height=6, fig.width=10}
+```{r jsplots, fig.height=3, fig.width=5}
 JackStrawPlot(sample_2, dims = 1:15)
 ```
 
-An alternative heuristic method generates an 'Elbow plot': a ranking of principle components based on the percentage of variance explained by each one (`ElbowPlot()` function). In this example, we can observe an 'elbow' around PC9-10, suggesting that the majority of true signal is captured in the first 10 PCs. 
-```{r elbow_plot, fig.height=6, fig.width=10}
+An alternative heuristic method generates an 'Elbow plot': a ranking of principle components based on the percentage of variance explained by each one (`ElbowPlot()` function). In this example, we can observe an 'elbow' around PC9-10, suggesting that the majority of true signal is captured in the first 10 PCs.
+
+```{r elbow_plot, fig.height=3, fig.width=5}
 ElbowPlot(sample_2)
 ```
 
-Identifying the true dimensionality of a dataset -- can be challenging/uncertain for the user. It is therefore suggested to consider three approaches. The first is more supervised, exploring PCs to determine relevant sources of heterogeneity, and could be used in conjunction with GSEA for example. The second implements a statistical test based on a random null model, but is time-consuming for large datasets, and may not return a clear PC cutoff. The third is a heuristic that is commonly used, and can be calculated instantly. In this example, all three approaches yielded similar results, but we might have been justified in choosing anything between PC 7-12 as a cutoff. 
+Identifying the true dimensionality of a dataset -- can be challenging/uncertain for the user. It is therefore suggested to consider three approaches. The first is more supervised, exploring PCs to determine relevant sources of heterogeneity, and could be used in conjunction with GSEA for example. The second implements a statistical test based on a random null model, but is time-consuming for large datasets, and may not return a clear PC cutoff. The third is a heuristic that is commonly used, and can be calculated instantly. In this example, all three approaches yielded similar results, but we might have been justified in choosing anything between PC 7-12 as a cutoff.
 
-*** 
+***
 
-## Run non-linear dimensional reduction (UMAP/tSNE)
+### Run non-linear dimensional reduction (UMAP/tSNE)
+
 Seurat offers several non-linear dimensional reduction techniques, such as tSNE and UMAP, to visualize and explore these datasets. The goal of these algorithms is to learn the underlying manifold of the data in order to place similar cells together in low-dimensional space. Cells within the graph-based clusters determined above should co-localize on these dimension reduction plots. As input to the UMAP and tSNE, we suggest using the same PCs we selected in the step before.
 
 ```{r umap}
 sample_2 <- RunUMAP(sample_2, dims = 1:10)
 ```
 
-```{r umapplot, fig.height=5, fig.width=7}
+```{r umapplot, fig.height=5, fig.width=5}
 DimPlot(sample_2, reduction = 'umap')
-```
-
-You can save the object at this point so that it can easily be loaded back in without having to rerun the computationally intensive steps performed above, or easily shared with collaborators.
-
-```{r saveobject, eval=FALSE}
-SaveH5Seurat(sample_2, filename = "/work/Intro_to_scRNAseq_R/Results/sample_2.filt.norm.h5Seurat")
 ```
 
 ***
 
-# Recommended approach using scTransform
+## Recommended approach using scTransform
 
-Biological heterogeneity in single-cell RNA-seq data is often confounded by technical factors, including sequencing depth. The number of molecules detected in each cell can vary significantly between cells, even within the same celltype.
-Interpretation of scRNA-seq data requires effective pre-processing and normalization to remove this technical variability. 
-In [Hafemeister and Satija, 2019](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1874-1) Seurat introduces a modeling framework for the normalization and variance stabilization of molecular count data from scRNA-seq experiment.
-This procedure omits the need for heuristic steps including pseudocount addition or log-transformation and improves common downstream analytical tasks such as variable gene selection, dimensional reduction, and differential expression.
+Biological heterogeneity in single-cell RNA-seq data is often confounded by technical factors, including sequencing depth. The number of molecules detected in each cell can vary significantly between cells, even within the same celltype. Interpretation of scRNA-seq data requires effective pre-processing and normalization to remove this technical variability. In [Hafemeister and Satija, 2019](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1874-1) Seurat introduces a modeling framework for the normalization and variance stabilization of molecular count data from scRNA-seq experiment. This procedure omits the need for heuristic steps including pseudocount addition or log-transformation and improves common downstream analytical tasks such as variable gene selection, dimensional reduction, and differential expression.
 
 By using [sctransform](https://github.com/ChristophH/sctransform/) based normalization, we enable recovering sharper biological distinction compared to log-normalization.
 
-We will reload first the filtered data
-```{r}
-sample_2 <- LoadH5Seurat("/work/Intro_to_scRNAseq_R/Results/sample_2.filt.h5Seurat")
-```
+### Apply sctransform normalization
 
-## Apply sctransform normalization
-
- * Note that this single command replaces `NormalizeData()`, `ScaleData()`, and `FindVariableFeatures()`.
- * Transformed data will be available in the SCT assay, which is set as the default after running sctransform
- * During normalization, we can also remove confounding sources of variation, for example, mitochondrial mapping percentage
+-   Note that this single command replaces `NormalizeData()`, `ScaleData()`, and `FindVariableFeatures()`.
+-   Transformed data will be available in the SCT assay, which is set as the default after running sctransform
+-   During normalization, we can also remove confounding sources of variation, for example, mitochondrial mapping percentage
 
 ```{r apply_sct, warning=FALSE, message=FALSE}
 # run sctransform
 sample_2 <- SCTransform(sample_2, vars.to.regress = "percent.mt", verbose = FALSE)
 ```
 
-The latest version of `sctransform` also supports using [glmGamPoi](https://bioconductor.org/packages/release/bioc/html/glmGamPoi.html)
-package which substantially improves the speed of the learning procedure. It can be invoked by specifying
-`method="glmGamPoi"`.
+The latest version of `sctransform` also supports using [glmGamPoi](https://bioconductor.org/packages/release/bioc/html/glmGamPoi.html) package which substantially improves the speed of the learning procedure. It can be invoked by specifying `method="glmGamPoi"`.
 
 ```{r eval=FALSE}
 sample_2 <- SCTransform(sample_2, method="glmGamPoi", vars.to.regress = "percent.mt", verbose = FALSE)
 ```
 
 Perform dimensionality reduction by PCA and UMAP embedding
+
 ```{r pca, fig.width=5, fig.height=5}
 # These are now standard steps in the Seurat workflow for visualization and clustering
 sample_2 <- RunPCA(sample_2, verbose = FALSE)
@@ -265,16 +267,23 @@ sample_2 <- RunUMAP(sample_2, dims = 1:30, verbose = FALSE)
 DimPlot(sample_2, label = TRUE) + NoLegend()
 ```
 
-Finally, we shoud can save the object at this point so that it can easily be loaded back in without having to rerun the computationally intensive steps performed above, or easily shared with collaborators.
+## Save data
 
-```{r saveobject, eval=FALSE}
-SaveH5Seurat(sample_2, filename = "/work/Intro_to_scRNAseq_R/Results/sample_2.filt.norm.h5Seurat")
+Finally, we should can save the object at this point so that it can easily be loaded back in without having to rerun the computationally intensive steps performed above, or easily shared with collaborators.
+
+```{r saveobject}
+SaveH5Seurat(sample_2, filename = "/work/Intro_scRNAseq_R/Results/sample_2.filt.norm.h5Seurat")
 ```
 
 <details>
-  <summary>**Why can we choose more PCs when using sctransform?**</summary>
-  
-In the standard Seurat workflow], we focused on 10 PCs for this dataset, though we highlight that the results are similar with higher settings for this parameter. Interestingly, we've found that when using sctransform, we often benefit by pushing this parameter even higher. We believe this is because the sctransform workflow performs more effective normalization, strongly removing technical effects from the data. 
+
+<summary>
+
+**Why can we choose more PCs when using sctransform?**
+
+</summary>
+
+In the standard Seurat workflow], we focused on 10 PCs for this dataset, though we highlight that the results are similar with higher settings for this parameter. Interestingly, we've found that when using sctransform, we often benefit by pushing this parameter even higher. We believe this is because the sctransform workflow performs more effective normalization, strongly removing technical effects from the data.
 
 Even after standard log-normalization, variation in sequencing depth is still a confounding factor (see [Figure 1](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1874-1)), and this effect can subtly influence higher PCs. In sctransform, this effect is substantially mitigated (see [Figure 3](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1874-1)). This means that higher PCs are more likely to represent subtle, but biologically relevant, sources of heterogeneity -- so including them may improve downstream analysis.
 
@@ -290,16 +299,21 @@ sample_2 <- CreateSeuratObject(sample_2) %>% SCTransform(vars.to.regress = 'perc
 </details>
 
 <details>
-  <summary>**Where are normalized values stored for sctransform?**</summary>
 
-sctransform calculates a model of technical noise in scRNA-seq data using 'regularized negative binomial regression'. The residuals for this model are normalized values, and can be positive or negative. Positive residuals for a given gene in a given cell indicate that we observed more UMIs than expected given the gene’s average expression in the population and cellular sequencing depth, while negative residuals indicate the converse. 
+<summary>
+
+**Where are normalized values stored for sctransform?**
+
+</summary>
+
+sctransform calculates a model of technical noise in scRNA-seq data using 'regularized negative binomial regression'. The residuals for this model are normalized values, and can be positive or negative. Positive residuals for a given gene in a given cell indicate that we observed more UMIs than expected given the gene's average expression in the population and cellular sequencing depth, while negative residuals indicate the converse.
 
 The results of sctransfrom are stored in the "SCT" assay: You can learn more about multi-assay data and commands in Seurat the [developer guide](https://github.com/satijalab/seurat/wiki/Assay).
 
-* `sample_2[["SCT"]]@scale.data` contains the residuals (normalized values), and is used directly as input to PCA. Please note that this matrix is non-sparse, and can therefore take up a lot of memory if stored for all genes. To save memory, it stores these values only for variable genes, by setting the return.only.var.genes = TRUE by default in the `SCTransform()` function call.
-* To assist with visualization and interpretation, it also converts Pearson residuals back to ‘corrected’ UMI counts. You can interpret these as the UMI counts we would expect to observe if all cells were sequenced to the same depth. If you want to see exactly how it is done, please look at the correct function [here](https://github.com/ChristophH/sctransform/blob/master/R/denoise.R).
-* The 'corrected' UMI counts are stored in `sample_2[["SCT"]]@counts`. It stores log-normalized versions of these corrected counts in `sample_2[["SCT"]]@data`, which are very helpful for visualization.
-* You can use the corrected log-normalized counts for differential expression and integration.
+-   `sample_2[["SCT"]]@scale.data` contains the residuals (normalized values), and is used directly as input to PCA. Please note that this matrix is non-sparse, and can therefore take up a lot of memory if stored for all genes. To save memory, it stores these values only for variable genes, by setting the return.only.var.genes = TRUE by default in the `SCTransform()` function call.
+-   To assist with visualization and interpretation, it also converts Pearson residuals back to 'corrected' UMI counts. You can interpret these as the UMI counts we would expect to observe if all cells were sequenced to the same depth. If you want to see exactly how it is done, please look at the correct function [here](https://github.com/ChristophH/sctransform/blob/master/R/denoise.R).
+-   The 'corrected' UMI counts are stored in `sample_2[["SCT"]]@counts`. It stores log-normalized versions of these corrected counts in `sample_2[["SCT"]]@data`, which are very helpful for visualization.
+-   You can use the corrected log-normalized counts for differential expression and integration.
 
 </details>
 
@@ -307,4 +321,4 @@ The results of sctransfrom are stored in the "SCT" assay: You can learn more abo
 
 **Exercise**
 
-Normalize and perform dimensionality reduction on sample 3. This is necessary for the next part of the workshop: integration of datasets.
+Normalize and perform dimensionality reduction on sample 3. This is necessary for the last part of the workshop: integration of datasets.

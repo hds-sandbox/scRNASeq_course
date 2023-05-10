@@ -51,7 +51,7 @@ An alternative and well-established tool for `R` users is [scanpy](https://scanp
 
 **Execution time: 30-60 minutes**
 
-# Setup
+## Setup
 
 ```{r message=FALSE}
 library(tidyverse)
@@ -70,13 +70,13 @@ help(FindClusters)
 knitr::include_graphics("./img/Part01_read_the_data/help_output.png")
 ```
 
-# Loading datasets
+## Loading datasets
 
 Data can be loaded from different possible formats, which usually has as a dedicated function for loading. For example, the `Read10X()` function reads in the output of the [cellranger](https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/what-is-cell-ranger) pipeline from 10X, returning a unique molecular identified (UMI) count matrix. The values in this matrix represent the number of molecules for each feature (i.e. gene; row) that are detected in each cell (column). 
 
 ```{r}
-sample_2 <- Read10X(data.dir = "/work/Intro_to_scRNAseq_R/Data/cellranger_sample2/outs/filtered_feature_bc_matrix/")
-sample_3 <- Read10X(data.dir = "/work/Intro_to_scRNAseq_R/Data/cellranger_sample3/outs/filtered_feature_bc_matrix/")
+sample_2 <- Read10X(data.dir = "/work/Intro_scRNAseq_R/Data/cellranger_sample2/outs/filtered_feature_bc_matrix/")
+sample_3 <- Read10X(data.dir = "/work/Intro_scRNAseq_R/Data/cellranger_sample3/outs/filtered_feature_bc_matrix/")
 ```
 
 We next use the count matrix to create a `Seurat` object, which is the main data structure used in the study. 
@@ -107,7 +107,7 @@ dense.size / sparse.size
 </details>
 
 
-# Seurat object structure
+## Seurat object structure
 
 >For a technical discussion of the `Seurat` object structure, check out the [Seurat GitHub Wiki](https://github.com/satijalab/seurat/wiki). 
 
@@ -143,7 +143,7 @@ We will look into these slots as they are needed through the course, so do not w
 | `reductions` | A list of DimReduc objects, like PCA or UMAP |
 | `project.name` | User-defined project name (optional) |
 
-## Exploring the Seurat Object
+### Exploring the Seurat Object
 
 Summary information about `Seurat` objects can be had quickly and easily using standard R functions. Object shape/dimensions can be found using the `dim`, `ncol`, and `nrow` functions; cell and feature names can be found using the `colnames` and `rownames` functions, respectively, or the `dimnames` function. A vector of names of `Assay` and `DimReduc` objects contained in a `Seurat` object can be obtained by using `names`.
 
@@ -153,6 +153,7 @@ sample_2
 ```
 
 `nrow()` and `ncol()` provide the number of features and cells in the active assay, respectively. `dim()` provides both nrow and ncol at the same time:
+
 ```{r}
 dim(x = sample_2)
 ```
@@ -162,11 +163,12 @@ head(x = rownames(x = sample_2))
 ```
 
 In addition to rownames and colnames, one can use `dimnames()`, which provides a two-length list with both rownames and colnames:
+
 ```{r}
 head(x = colnames(x = sample_2))
 ```
 
-### Assay object
+#### Assay object
 
 For typical scRNA-seq experiments, a Seurat object will have a single Assay ("RNA"). This assay will also store multiple 'transformations' of the data, including raw counts (@counts slot), normalized data (@data slot), and scaled data for dimensional reduction (@scale.data slot).
 
@@ -181,11 +183,12 @@ The slots of the `Assay` object contain the count matrix and its transformations
 | `scale.data` | Scaled data matrix |
 | `meta.features` | Feature-level meta data |
 
-## Accessing data from the Seurat Object
+### Accessing data from the Seurat Object
 
 Pulling specific `Assay`,  objects can be done with the double `[[` [extract operator](https://www.rdocumentation.org/packages/base/versions/3.5.1/topics/Extract). Adding new objects to a `Seurat` object is also done with the double `[[` [extract operator](https://www.rdocumentation.org/packages/base/versions/3.5.1/topics/Extract); Seurat will figure out where in the `Seurat` object a new associated object belongs.
 
 If you want to know all the objects inside the `Seurat` object, you can use the `names()` function. These can be passed to the double `[[` extract operator to pull them from the Seurat object:
+
 ```{r}
 names(x = sample_2)
 sample_2[["RNA"]]
@@ -196,6 +199,7 @@ Accessing data from an `Seurat` object is done with the `GetAssayData` function.
 ```{r}
 GetAssayData(object = sample_2, slot = 'counts')[1:3, 1:3]
 ```
+
 You can also access the data using the double extract operator `[[` on an Assay name, followed by `@` operator and the name of the data (counts, data or scale.data).
 
 ```{r}
@@ -218,7 +222,7 @@ head(sample_2$nCount_RNA)
 
 > We will take a look at the `DimReduc` object in the next sessions!
 
-Finally, we can talk about identity classes. An identity class is just a categorical metadata column used to identify the cells. This could be a cluster number, cell type, or batch number. The identity class can be used in many functions as a shortcut to separate group of cells. You can check which column is being used as a identity class by checking the `active.ident` slot, or the `Ident()` function:
+Finally, we can talk about identity classes. An identity class is just a categorical metadata column used to identify the cells. This could be a cluster number, cell type, or batch number. The identity class can be used in many functions as a shortcut to separate group of cells. You can check which column is being used as a identity class by checking the `active.ident` slot, or the `Idents()` function:
 
 ```{r}
 head(sample_2@active.ident)
@@ -239,7 +243,7 @@ Idents(sample_2) <- sample_2$random_ID
 head(Idents(sample_2))
 ```
 
-## Subsetting data
+### Subsetting data
 
 You can subset Seurat objects using the function `subset()`. You can subset based on metadata, expression level of a gene or an identity class. Here you can find some examples:
 
@@ -269,24 +273,32 @@ subset(x = sample_2, subset = CAP1 > 3 & nCount_RNA > 1000)
 subset(x = sample_2, downsample = 100)
 ```
 
-# Saving and loading a Seurat object
+Let's delete the random_ID column from the metadata since it is not useful:
+
+```{r}
+Idents(sample_2) <- "orig.ident"
+sample_2@meta.data <- sample_2@meta.data[,!colnames(sample_2@meta.data) == "random_ID"]
+```
+
+## Saving and loading a Seurat object
 
 You can save the Seurat object using the H5Seurat file format:
 
 ```{r}
-SaveH5Seurat(sample_2, filename = "/work/Intro_to_scRNAseq_R/Results/sample_2.h5Seurat")
+SaveH5Seurat(sample_2, filename = "/work/Intro_scRNAseq_R/Results/sample_2.h5Seurat")
 ```
 
-If you plan to work with `scanpy`, you might want to convert H5Seurat into h5ad format. This is easily done using the `Convert()` function. You can, of course, transform an h5ad file into H5Seurat using the same function
+If you plan to work with `scanpy`, you might want to convert H5Seurat into h5ad format. This is easily done using the `Convert()` function. You can, of course, transform an h5ad file into H5Seurat using the same function:
+
 ```{r}
-#Convert("/work/Intro_to_scRNAseq_R/Results/sample_2.h5Seurat", dest = "h5ad")
-Convert("/work/Intro_to_scRNAseq_R/Results/sample_2.h5ad", dest = "h5Seurat", overwrite = TRUE)
+Convert("/work/Intro_scRNAseq_R/Results/sample_2.h5Seurat", dest = "h5ad")
+#Convert("/work/Intro_scRNAseq_R/Results/sample_2.h5ad", dest = "h5Seurat", overwrite = TRUE)
 ```
 
 To load a H5Seurat object, use the following function `LoadH5Seurat()`:
 
 ```{r}
-sample_2 <- LoadH5Seurat("/work/Intro_to_scRNAseq_R/Results/sample_2.h5seurat")
+sample_2 <- LoadH5Seurat("/work/Intro_scRNAseq_R/Results/sample_2.h5Seurat")
 ```
 
 Then you can use it in python!
@@ -298,3 +310,9 @@ import scanpy
 adata = scanpy.read_h5ad("sample_2.h5ad")
 adata
 ```
+
+***
+
+## Wrapping up
+
+In this lesson we have introduced the Seurat package and how it works internally. We have learned how to load datasets, create, save and reload Seurat objects. We have also learned how to subset datasets and wrangle their metadata. In the next lessons we will learn how to properly QC your datasets!
