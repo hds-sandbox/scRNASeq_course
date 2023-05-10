@@ -38,7 +38,7 @@ knitr::opts_chunk$set(autodep        = TRUE,
 
 The joint analysis of two or more single-cell datasets poses unique challenges. In particular, identifying cell populations that are present across multiple datasets can be problematic under standard workflows. Seurat v4 includes a set of methods to match (or ‘align’) shared cell populations across datasets. These methods first identify cross-dataset pairs of cells that are in a matched biological state (‘anchors’), can be used both to correct for technical differences between datasets (i.e. batch effect correction), and to perform comparative scRNA-seq analysis of across experimental conditions.
 
-![](./img/Part04/integration_explained.jpeg)
+![](./img/Part05_integration/integration_explained.jpeg)
 <details>
   <summary>**Figure caption**</summary>
 (A) Representation of two datasets, reference and query, each of which originates from a separate single-cell experiment. The two datasets share cells from similar biological states, but the query dataset contains a unique population (in black).

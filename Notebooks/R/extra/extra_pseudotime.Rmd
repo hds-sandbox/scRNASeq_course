@@ -60,7 +60,7 @@ While clustering is an useful type of analysis to try giving a structure to the 
 
 ***
 
-# Setup
+## Setup
 
 ```{r}
 library(Seurat)
@@ -71,7 +71,7 @@ library(slingshot)
 sample.combined.sct <- LoadH5Seurat("/work/Intro_to_scRNAseq_R/Results/sample_23.filt.norm.red.clust.h5Seurat")
 ```
 
-# Pseudotime
+## Pseudotime
 
 We will use the package [Slignshot](https://bioconductor.org/packages/release/bioc/vignettes/slingshot/inst/doc/vignette.html). Slingshot was designed to model developmental trajectories in single-cell RNA sequencing data and serve as a component in an analysis pipeline after dimensionality reduction and clustering.
 
@@ -118,8 +118,7 @@ ggplot(as.data.frame(colData(sample.combined.SCE)), aes(x = pseudotime,
   ggtitle("Cells ordered by Slingshot pseudotime")
 ```
 
-
-# Wrapping up
+## Wrapping up
 
 This notebook shows how to do pseudotimes analysis and exploring cell fates and gene expressions.
 We have seen how to distinguish between an actual differentiation branch and a differentiation stage. Basically, all cells before (i.e. earlier in pseudotime) a differentiation stage will be associated to such stage with high probability, because they must go through that developmental stage. Finding a developmental stage around meiosis in spermatogenic samples is a common result across single cell datasets of many species, such as humans, primates and mice.
