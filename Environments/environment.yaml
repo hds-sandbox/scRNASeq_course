@@ -44,7 +44,6 @@ dependencies:
     - r-wgcna
     - r-qlcmatrix
     - rsem
-    - rseqc
     - salmon
     - sambamba
     - samtools
@@ -68,3 +67,4 @@ dependencies:
     - numpy>=2
     - pip:
         - jupyterquiz
+        - rseqc
