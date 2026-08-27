@@ -14,6 +14,7 @@ dependencies:
     - bioconductor-org.mm.eg.db
     - bioconductor-org.dm.eg.db
     - bioconductor-genomicranges
+    - bioconductor-scater
     - hds.sandbox::r-annotables
     - bioconductor-ucell
     - bowtie2
@@ -31,6 +32,11 @@ dependencies:
     - kallisto
     - loompy
     - multiqc
+    - rpy2
+    - anndata2ri
+    - bbknn
+    - palantir
+    - gseapy
     - r-globals>=0.16.1
     - r-parallelly>=1.34.0
     - r-harmony>=1.0.1
@@ -68,3 +74,4 @@ dependencies:
     - pip:
         - jupyterquiz
         - rseqc
+        - glmpca
