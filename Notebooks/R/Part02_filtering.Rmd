@@ -65,7 +65,7 @@ library(Seurat)
 library(SeuratDisk)
 library(patchwork)
 
-sample_2 <- LoadH5Seurat("/work/Intro_scRNAseq_R/Results/sample_2.h5Seurat")
+sample_2 <- LoadH5Seurat("../../Results/sample_2.h5Seurat")
 ```
 
 ## QC and selecting cells for further analysis
@@ -225,7 +225,7 @@ The UMAP plot gives a pretty well-structured output for this dataset. We will ke
 ## Save dataset
 
 ```{r}
-SaveH5Seurat(sample_2, filename = "/work/Intro_scRNAseq_R/Results/sample_2.filt.h5Seurat")
+SaveH5Seurat(sample_2, filename = "../../Results/sample_2.filt.h5Seurat")
 ```
 
 ***

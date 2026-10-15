@@ -75,8 +75,8 @@ knitr::include_graphics("./img/Part01_read_the_data/help_output.png")
 Data can be loaded from different possible formats, which usually has as a dedicated function for loading. For example, the `Read10X()` function reads in the output of the [cellranger](https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/what-is-cell-ranger) pipeline from 10X, returning a unique molecular identified (UMI) count matrix. The values in this matrix represent the number of molecules for each feature (i.e. gene; row) that are detected in each cell (column). 
 
 ```{r}
-sample_2 <- Read10X(data.dir = "/work/Intro_scRNAseq_R/Data/cellranger_sample2/outs/filtered_feature_bc_matrix/")
-sample_3 <- Read10X(data.dir = "/work/Intro_scRNAseq_R/Data/cellranger_sample3/outs/filtered_feature_bc_matrix/")
+sample_2 <- Read10X(data.dir = "../../Data/cellranger_sample2/outs/filtered_feature_bc_matrix/")
+sample_3 <- Read10X(data.dir = "../../Data/cellranger_sample3/outs/filtered_feature_bc_matrix/")
 ```
 
 We next use the count matrix to create a `Seurat` object, which is the main data structure used in the study. 
@@ -285,20 +285,21 @@ sample_2@meta.data <- sample_2@meta.data[,!colnames(sample_2@meta.data) == "rand
 You can save the Seurat object using the H5Seurat file format:
 
 ```{r}
-SaveH5Seurat(sample_2, filename = "/work/Intro_scRNAseq_R/Results/sample_2.h5Seurat")
+dir.create("../../Results", showWarnings = FALSE, recursive = TRUE)
+SaveH5Seurat(sample_2, filename = "../../Results/sample_2.h5Seurat")
 ```
 
 If you plan to work with `scanpy`, you might want to convert H5Seurat into h5ad format. This is easily done using the `Convert()` function. You can, of course, transform an h5ad file into H5Seurat using the same function:
 
 ```{r}
-Convert("/work/Intro_scRNAseq_R/Results/sample_2.h5Seurat", dest = "h5ad")
-#Convert("/work/Intro_scRNAseq_R/Results/sample_2.h5ad", dest = "h5Seurat", overwrite = TRUE)
+Convert("../../Results/sample_2.h5Seurat", dest = "h5ad")
+#Convert("../../Results/sample_2.h5ad", dest = "h5Seurat", overwrite = TRUE)
 ```
 
 To load a H5Seurat object, use the following function `LoadH5Seurat()`:
 
 ```{r}
-sample_2 <- LoadH5Seurat("/work/Intro_scRNAseq_R/Results/sample_2.h5Seurat")
+sample_2 <- LoadH5Seurat("../../Results/sample_2.h5Seurat")
 ```
 
 Then you can use it in python!

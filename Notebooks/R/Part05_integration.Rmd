@@ -74,8 +74,8 @@ library(Seurat)
 library(SeuratDisk)
 library(sctransform)
 
-sample_2 <- LoadH5Seurat("/work/Intro_scRNAseq_R/Results/sample_2.filt.norm.h5Seurat")
-sample_3 <- LoadH5Seurat("/work/Intro_scRNAseq_R/Results/sample_3.filt.norm.h5Seurat")
+sample_2 <- LoadH5Seurat("../../Results/sample_2.filt.norm.h5Seurat")
+sample_3 <- LoadH5Seurat("../../Results/sample_3.filt.norm.h5Seurat")
 ```
 
 First of all, we need to be able to distinguish both datasets. We will give them a new `sample` metadata column 
@@ -136,7 +136,7 @@ DimPlot(sample.combined.sct, reduction = "umap", group.by = "sample")
 
 We should save our integrated object for further analysis.
 ```{r}
-SaveH5Seurat(sample.combined.sct, filename = "/work/Intro_scRNAseq_R/Results/sample_23.filt.norm.red.h5Seurat")
+SaveH5Seurat(sample.combined.sct, filename = "../../Results/sample_23.filt.norm.red.h5Seurat")
 ```
 
 ## Reciprocal PCA
@@ -369,7 +369,7 @@ FeaturePlot(sample.combined.sct, features = c("PGP", "BOD1L2", "GLIPR1L1"), spli
 ## Save dataset
 
 ```{r}
-SaveH5Seurat(sample_2, filename = "/work/Intro_scRNAseq_R/Results/sample_23.filt.norm.red.clust.h5Seurat")
+SaveH5Seurat(sample_2, filename = "../../Results/sample_23.filt.norm.red.clust.h5Seurat")
 ```
 
 ***

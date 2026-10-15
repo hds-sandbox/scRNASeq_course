@@ -65,7 +65,7 @@ library(Seurat)
 library(SeuratDisk)
 library(sctransform)
 
-sample_2 <- LoadH5Seurat("/work/Intro_scRNAseq_R/Results/sample_2.filt.h5Seurat")
+sample_2 <- LoadH5Seurat("../../Results/sample_2.filt.h5Seurat")
 ```
 
 ## Standard approach for normalization and scaling
@@ -272,7 +272,7 @@ DimPlot(sample_2, label = TRUE) + NoLegend()
 Finally, we should can save the object at this point so that it can easily be loaded back in without having to rerun the computationally intensive steps performed above, or easily shared with collaborators.
 
 ```{r saveobject}
-SaveH5Seurat(sample_2, filename = "/work/Intro_scRNAseq_R/Results/sample_2.filt.norm.h5Seurat")
+SaveH5Seurat(sample_2, filename = "../../Results/sample_2.filt.norm.h5Seurat")
 ```
 
 <details>
