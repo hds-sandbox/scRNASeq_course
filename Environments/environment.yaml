@@ -36,6 +36,7 @@ dependencies:
     - anndata2ri
     - bbknn
     - gseapy
+    - scvelo
     - r-globals>=0.16.1
     - r-parallelly>=1.34.0
     - r-harmony>=1.0.1
